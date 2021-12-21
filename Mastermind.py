@@ -1,48 +1,41 @@
 from tkinter import *
 from enum import Enum
-import numpy as np
 
-# TODO: Make everything scalable according to the windows size
-x_size_of_board = 300
-y_size_of_board = 800
-
-key_y_loc = 50
-
-guess_y_first_loc = 100
-
-guess_y_loc_list = list(range(150,650,50))
-
-x_loc_list = [50, 100, 150, 200]
-
-empty_peg_size = 5.0
-score_peg_size = 6.5
-color_peg_size = 10.0
-
-score_peg_size = 2
-peg_outline_color = "#0F0F0F"
+# References :
+#
+# Good starting tutorial with clean code:
+# https://towardsdatascience.com/making-simple-games-in-python-f35f3ae6f31a - Aqeel Anwar (Dots and Boxes)
+# https://github.com/aqeelanwar/Dots-and-Boxes
+# 
+# https://pythonguides.com/python-tkinter-events/
 
 class GameStates(Enum):
-    SETTING_CODE = 0,
-    COMPUTER_SETTING_CODE = 1,
-    SCORING = 2,
+    SETTING_CODE = 0
+    COMPUTER_SETTING_CODE = 1
+    SCORING = 2
     STANDARD_PLAY = 3
 
 class PegStates(Enum):
-    EMPTY = {"color":"#808080", "clickable":True, "size":empty_peg_size},
-    HIDDEN = {"color":"#202020", "clickable":False, "size":color_peg_size},
-    WHITE = {"color":"#FDFDFD", "clickable":True, "size":color_peg_size},
-    BLACK = {"color":"#000000", "clickable":True, "size":color_peg_size},
-    RED = {"color":"#FF2020", "clickable":True, "size":color_peg_size},
-    GREEN = {"color":"#20FF20", "clickable":True, "size":color_peg_size},
-    BLUE = {"color":"#2020FF", "clickable":True, "size":color_peg_size},
-    YELLOW = {"color":"#20FFFF", "clickable":True, "size":color_peg_size}
+    EMPTY = {"color":"#808080", "clickable":True, "size":None}
+    HIDDEN = {"color":"#202020", "clickable":False, "size":None}
+    WHITE = {"color":"#FDFDFD", "clickable":True, "size":None}
+    BLACK = {"color":"#000000", "clickable":True, "size":None}
+    RED = {"color":"#FF2020", "clickable":True, "size":None}
+    GREEN = {"color":"#20FF20", "clickable":True, "size":None}
+    BLUE = {"color":"#2020FF", "clickable":True, "size":None}
+    YELLOW = {"color":"#FFFF20", "clickable":True, "size":None}
 
-# This dictionary defines state transition rules. The keys are the 
-state_list = [PegStates.WHITE, PegStates.BLACK, PegStates.RED, 
-              PegStates.GREEN, PegStates.BLUE,  PegStates.YELLOW]
+# This list defines state transition rules.
+state_list = [PegStates.WHITE, 
+              PegStates.BLACK, 
+              PegStates.RED, 
+              PegStates.GREEN, 
+              PegStates.BLUE,  
+              PegStates.YELLOW]
 
 class ColorPeg():
     def __init__(self, x_loc, y_loc):
+        self.peg_outline_color = "#0F0F0F"
         self.state = PegStates.EMPTY
         self.x_loc = x_loc
         self.y_loc = y_loc
@@ -64,6 +57,8 @@ class ColorPeg():
             self.state = state_list[0]
         print("end - self.state : " + self.state.name + " : " + str(curr_ind))
 
+    get 
+
     def __str__(self):
         out_str = ""
         out_str += "state : " + self.state.name + "\n"
@@ -73,26 +68,57 @@ class ColorPeg():
 
 class Mastermind_Class():
     def __init__(self):
-        self.window = Tk()
-        self.window.title('Mastermind - Beta_0.1')
-        self.canvas = Canvas(self.window, width=x_size_of_board, height=y_size_of_board)
-        self.canvas.pack()
-        self.window.bind('<Button-1>', self.click)
         self.game_state = GameStates.SETTING_CODE
+        
+        self.x_size_of_board = 300
+        self.y_size_of_board = 800
+
+        self.load_settings()
         self.key_color_pegs = []
         self.guess_color_pegs = []
 
+        self.window = Tk()
+        self.window.title('Mastermind - Beta_0.1')
+        self.canvas = Canvas(self.window, width=self.x_size_of_board, height=self.y_size_of_board)
+        self.canvas.pack()
+
+        self.window.bind('<Button-1>', self.click)
         self.initialize_board()
         self.refresh_board()
         self.play_again()
         
     def initialize_board(self):
-        for x in x_loc_list:
-            self.key_color_pegs.append(ColorPeg(x , key_y_loc))
+        # Set all sizes used here, all based off the window sizes
+        # 6 x columns, 12 y columns for now, base everything on that
+        self.x_size = self.x_size_of_board / 6
+        self.y_size = self.y_size_of_board / 13
+
+        self.peg_size_ref = self.x_size
+        if self.y_size < self.peg_size_ref:
+            self.peg_size_ref = self.y_size
+
+        self.key_y_loc = self.y_size
+        self.separator_line = self.y_size * 2
+        self.guess_y_first_loc = self.y_size * 3
         
-        for y in guess_y_loc_list:
-            for x in x_loc_list:
-                self.guess_color_pegs.append(ColorPeg(x, y))        
+        # Might want to move these into peg classes... probably
+        self.score_peg_size = self.peg_size_ref / 30
+        self.score_peg_size = self.score_peg_size * 2
+        self.empty_color_peg_size = self.score_peg_size * 1.5
+        self.color_peg_size = self.score_peg_size * 3    
+
+        self.x_loc_list = [self.x_size, self.x_size * 2, self.x_size * 3, self.x_size * 4]
+
+        self.guess_y_loc_list = list(range(int(self.guess_y_first_loc), int(self.y_size * 12), int(self.y_size)))
+
+        # Build key location, the top row
+        for x in self.x_loc_list:
+            self.key_color_pegs.append(ColorPeg(x , self.key_y_loc))
+        
+        # Build guess rows
+        for y in self.guess_y_loc_list:
+            for x in self.x_loc_list:
+                self.guess_color_pegs.append(ColorPeg(x, y))      
 
     def refresh_board(self):
          # Put a line here befoe guess pegs
@@ -101,35 +127,47 @@ class Mastermind_Class():
 
         for k_peg in self.guess_color_pegs + self.key_color_pegs:
             if k_peg.state == PegStates.EMPTY:
-                self.canvas.create_oval(k_peg.x_loc - empty_peg_size, 
-                                        k_peg.y_loc - empty_peg_size, 
-                                        k_peg.x_loc + empty_peg_size,
-                                        k_peg.y_loc + empty_peg_size, 
+                self.canvas.create_oval(k_peg.x_loc - self.empty_color_peg_size, 
+                                        k_peg.y_loc - self.empty_color_peg_size, 
+                                        k_peg.x_loc + self.empty_color_peg_size,
+                                        k_peg.y_loc + self.empty_color_peg_size, 
                                         fill=k_peg.state.value["color"],
-                                        outline=peg_outline_color)
+                                        outline=k_peg.peg_outline_color)
             else:
                 print(k_peg)
-                self.canvas.create_oval(k_peg.x_loc - color_peg_size, 
-                                        k_peg.y_loc - color_peg_size, 
-                                        k_peg.x_loc + color_peg_size,
-                                        k_peg.y_loc + color_peg_size, 
+                self.canvas.create_oval(k_peg.x_loc - self.color_peg_size, 
+                                        k_peg.y_loc - self.color_peg_size, 
+                                        k_peg.x_loc + self.color_peg_size,
+                                        k_peg.y_loc + self.color_peg_size, 
                                         fill=k_peg.state.value["color"],
-                                        outline=peg_outline_color)
+                                        outline=k_peg.peg_outline_color)
     def click(self, event):
         print("Event : " + str(event))
         if(event.num == 1):
             # Left clicked, figure out if they are clicking on a circle
             for k_peg in self.key_color_pegs + self.guess_color_pegs:
                 # print("k_peg : " + str(k_peg))
-                if event.x < k_peg.x_loc + color_peg_size and \
-                   event.x > k_peg.x_loc - color_peg_size and \
-                   event.y < k_peg.y_loc + color_peg_size and \
-                   event.y > k_peg.y_loc - color_peg_size:
-                    print("FOUND MATCH")
+                if event.x < k_peg.x_loc + self.color_peg_size and \
+                   event.x > k_peg.x_loc - self.color_peg_size and \
+                   event.y < k_peg.y_loc + self.color_peg_size and \
+                   event.y > k_peg.y_loc - self.color_peg_size:
+                    print("FOUND PEG")
                     k_peg.cycle_states()
+
+        elfif(event.num == 2):
 
         self.refresh_board()
 
+    def save_settings(self):
+        # TODO: Save settings here
+        pass
+
+    def load_settings(self):
+        pass
+
+    def on_closing(self):
+        self.save_settings()
+        self.window.destroy()
 
     def play_again(self):
         self.initialize_board()
@@ -137,6 +175,8 @@ class Mastermind_Class():
 
     def mainloop(self):
         self.window.mainloop()
+
+    
 
 if __name__ == "__main__":
     mc = Mastermind_Class()
