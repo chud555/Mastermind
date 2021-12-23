@@ -1,7 +1,9 @@
 from tkinter import *
 from enum import Enum
 import collections, traceback, random
-import ColorPeg, TextObj, ScorePeg
+from ColorPeg import ColorPeg
+from ScorePeg import ScorePeg
+from TextObj import TextObj
 
 # References :
 #
@@ -38,16 +40,16 @@ class Mastermind_Class():
         self.guess_color_pegs = []
         self.submit_guess_text = []
         self.text_values = []
-        self.round_text = [list(range(10, 0, -1))]
+        self.round_text = list(range(10, 0, -1))
         self.title_text = None
         
         self.window = Tk()
         self.window.title('Mastermind - Beta_0.1')
-        self.canvas = Canvas(self.window, width=self.x_max_size, height=self.y_max_size)
+        self.canvas = Canvas(self.window, width=self.x_size_of_board, height=self.y_size_of_board)
         self.canvas.pack()
         self.window.minsize(self.x_min_size, self.y_min_size)
         self.window.maxsize(self.x_max_size, self.y_max_size)
-        self.p_start_button = Button(self.window, text = "Player Start", command=self.player_start)
+        self.p_start_button = Button(self.window, text = "Start", command=self.player_start)
 
         self.window.bind("<Configure>", self.configure)
         self.window.bind('<Button-1>', self.click)
@@ -104,6 +106,9 @@ class Mastermind_Class():
         self.text_values.append(TextObj(0, 0, "Start"))
         self.title_text = TextObj(0, 0, "Round Number : N/A")
 
+        for y in self.guess_y_loc_list:
+            self.submit_guess_text.append(TextObj(0, 0, "X"))
+
     def refresh_board(self):
         self.set_sizes()
         
@@ -122,8 +127,8 @@ class Mastermind_Class():
         for x, k_peg in zip(self.x_loc_list, self.key_color_pegs):
             k_peg.move_peg(x, self.key_y_loc)
 
-        for y, guess_list in zip(self.guess_y_loc_list, self.guess_color_pegs):
-                       
+        for y, guess_list, sub_text in zip(self.guess_y_loc_list, self.guess_color_pegs, self.submit_guess_text):
+            sub_text.move_text(self.x_start_text, y)
             for x, k_peg in zip(self.x_loc_list, guess_list):
                 k_peg.move_peg(x, y)
 
@@ -134,8 +139,8 @@ class Mastermind_Class():
         for text in self.text_values:
             text.move_text(self.x_start_text, text_y)
             text_y = text_y + self.y_size / 2.0
-
-        self.title_text.move_text(self.x_size, self.key_y_loc - 50)
+        
+        self.title_text.move_text(self.x_size * 2, self.key_y_loc - 50)
 
         self.canvas.delete("all")
 
@@ -145,20 +150,38 @@ class Mastermind_Class():
 
         guess_color_pegs_flat = [item for items in self.guess_color_pegs for item in items]
         
-        for k_peg in self.key_color_pegs + guess_color_pegs_flat:
+        for k_peg in self.key_color_pegs:
             k_peg.set_peg_size(self.peg_size_ref)
             if k_peg.state == ColorPeg.States.EMPTY:
-                self.canvas.create_oval(k_peg.x_loc - k_peg.empty_size, 
-                                        k_peg.y_loc - k_peg.empty_size, 
-                                        k_peg.x_loc + k_peg.empty_size,
-                                        k_peg.y_loc + k_peg.empty_size, 
-                                        fill=k_peg.state.value["color"],
-                                        outline=k_peg.peg_outline_color)
+                curr_size = k_peg.empty_size
             else:                
-                self.canvas.create_oval(k_peg.x_loc - k_peg.size, 
-                                        k_peg.y_loc - k_peg.size, 
-                                        k_peg.x_loc + k_peg.size,
-                                        k_peg.y_loc + k_peg.size, 
+                curr_size = k_peg.size
+            self.canvas.create_oval(k_peg.x_loc - curr_size, 
+                                    k_peg.y_loc - curr_size, 
+                                    k_peg.x_loc + curr_size,
+                                    k_peg.y_loc + curr_size, 
+                                    fill=k_peg.state.value["color"],
+                                    outline=k_peg.peg_outline_color)
+
+        for guess_list, round_t, guess_text in zip(self.guess_color_pegs, self.round_text, self.submit_guess_text):
+            if round_t == self.game_round:
+                curr_color= "#20FD20"
+            else:
+                curr_color = "Black"
+            if self.game_round != None:
+                if round_t <= self.game_round:
+                    self.canvas.create_text(self.x_size / 2, guess_list[0].y_loc, font=("Courier New", int(self.x_size / 5.0)), fill=curr_color, text=str(round_t))
+                    self.canvas.create_text(guess_text.x_loc, guess_text.y_loc, font=("Courier New", int(self.x_size / 2.0)), fill=guess_text.color, text=str(guess_text.text))
+            for k_peg in guess_list:
+                k_peg.set_peg_size(self.peg_size_ref)                
+                if k_peg.state == ColorPeg.States.EMPTY:
+                    curr_size = k_peg.empty_size                    
+                else:                
+                    curr_size = k_peg.size
+                self.canvas.create_oval(k_peg.x_loc - curr_size,
+                                        k_peg.y_loc - curr_size, 
+                                        k_peg.x_loc + curr_size,
+                                        k_peg.y_loc + curr_size, 
                                         fill=k_peg.state.value["color"],
                                         outline=k_peg.peg_outline_color)
 
@@ -168,15 +191,14 @@ class Mastermind_Class():
                                          (self.key_y_loc - self.y_size / 4),
                                          (self.x_loc_list[3] + self.x_size / 4),
                                          (self.key_y_loc + self.y_size / 4),
-                                         fill="#FDFDFD"
-                                        )
+                                         fill="#D0D0D0")
 
         # Draw the text stuff now        
         for text in self.text_values:
-            self.canvas.create_text(text.x_loc, text.y_loc, font=16, fill=text.color, text=text.text)
+            self.canvas.create_text(text.x_loc, text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill=text.color, text=text.text)
 
         # Create title text
-        self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font = 20, text=self.title_text.text)
+        self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), text=self.title_text.text)
 
         for k_peg in self.score_pegs:
             k_peg.set_peg_size(self.peg_size_ref)
@@ -289,6 +311,12 @@ class Mastermind_Class():
                 text.color = text.green
             else:
                 text.color = text.black
+        
+        for text in self.submit_guess_text:
+            if text.is_over_text(event.x, event.y):
+                text.color = text.green
+            else:
+                text.color = text.black
         self.refresh_board()
 
     def set_game_round(self, curr_round):
@@ -304,7 +332,10 @@ class Mastermind_Class():
             self.key_color_pegs[3].state = random.choice(ColorPeg.state_list)
         elif game_to_start == "Start":
             # If any of the pegs aren't defined, define them, then start (single player game)
-            if self.key_color_pegs[0].state == ColorPeg.States.EMPTY:
+            if self.key_color_pegs[0].state == ColorPeg.States.EMPTY or \
+               self.key_color_pegs[1].state == ColorPeg.States.EMPTY or \
+               self.key_color_pegs[2].state == ColorPeg.States.EMPTY or \
+               self.key_color_pegs[3].state == ColorPeg.States.EMPTY:
                 self.key_color_pegs[0].state = random.choice(ColorPeg.state_list)
                 self.key_color_pegs[1].state = random.choice(ColorPeg.state_list)
                 self.key_color_pegs[2].state = random.choice(ColorPeg.state_list)

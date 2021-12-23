@@ -1,3 +1,5 @@
+from enum import Enum
+
 class ColorPeg():
     class States(Enum):
         EMPTY = {"color":"#808080", "clickable":True, "size":None}        

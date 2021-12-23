@@ -1,3 +1,5 @@
+from enum import Enum
+
 class ScorePeg():
     class States(Enum):
         EMPTY = {"color":"#808080"}
