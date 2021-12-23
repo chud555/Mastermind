@@ -1,6 +1,7 @@
 from tkinter import *
 from enum import Enum
 import collections, traceback, random
+import ColorPeg, TextObj, ScorePeg
 
 # References :
 #
@@ -16,153 +17,6 @@ class GameStates(Enum):
     SCORING = 2
     STANDARD_PLAY = 3
 
-class ScorePeg():
-    class States(Enum):
-        EMPTY = {"color":"#808080"}
-        WHITE = {"color":"#FDFDFD"}
-        BLACK = {"color":"#FDFDFD"}
-
-    def __init__(self, x_loc, y_loc, size_ref):
-        self.peg_outline_color = "#0F0F0F"
-        self.state = ScorePeg.States.EMPTY        
-        self.x_loc = x_loc
-        self.y_loc = y_loc
-        self.set_peg_locations(size_ref)
-        
-        self.size = 0
-        self.empty_size = 0       
-
-    def set_peg_size(self, p_size):        
-        self.set_peg_locations(p_size)
-        self.empty_size = (p_size/20.0)
-        self.size = (p_size/20.0) * 3
-
-    def set_peg_locations(self, size_ref):
-        self.size_ref = (size_ref / 5.0)
-        self.p1_x_loc = self.x_loc - (self.size_ref)
-        self.p1_y_loc = self.y_loc + (self.size_ref)
-        self.p2_x_loc = self.x_loc + (self.size_ref)
-        self.p2_y_loc = self.y_loc + (self.size_ref)
-        self.p3_x_loc = self.x_loc - (self.size_ref)
-        self.p3_y_loc = self.y_loc - (self.size_ref)
-        self.p4_x_loc = self.x_loc + (self.size_ref)
-        self.p4_y_loc = self.y_loc - (self.size_ref) 
-    
-    def move_peg(self, x_pos, y_pos):
-        self.x_loc = x_pos
-        self.y_loc = y_pos
-        self.set_peg_locations(self.size_ref * 5.0)
-
-class ColorPeg():
-    class States(Enum):
-        EMPTY = {"color":"#808080", "clickable":True, "size":None}        
-        WHITE = {"color":"#FDFDFD", "clickable":True, "size":None}
-        BLACK = {"color":"#000000", "clickable":True, "size":None}
-        RED = {"color":"#FF2020", "clickable":True, "size":None}
-        GREEN = {"color":"#20FF20", "clickable":True, "size":None}
-        BLUE = {"color":"#2020FF", "clickable":True, "size":None}
-        YELLOW = {"color":"#FFFF20", "clickable":True, "size":None}
-
-    # This list defines state transition rules.
-    state_list = [States.WHITE, 
-                  States.BLACK, 
-                  States.RED, 
-                  States.GREEN, 
-                  States.BLUE,  
-                  States.YELLOW]
-
-    def __init__(self, x_loc, y_loc):
-        self.peg_outline_color = "#0F0F0F"
-        self.state = ColorPeg.States.EMPTY
-        self.x_loc = x_loc
-        self.y_loc = y_loc
-        self.isClickable = True
-        self.isHidden = False
-        self.size = 0
-        self.empty_size = 0       
-
-    def cycle_states(self, reverse = False):
-        curr_list = ColorPeg.state_list
-        if reverse:
-            curr_list = ColorPeg.state_list.reverse()
-        curr_ind = 0
-        print("start - self.state : " + self.state.name)
-        if self.state in ColorPeg.state_list:
-            x = 0
-            for state in ColorPeg.state_list:
-                if self.state == state:
-                    curr_ind = x
-                x += 1
-            curr_ind += 1
-        print("curr_ind : " + str(curr_ind))
-        if curr_ind < len(ColorPeg.state_list):
-            self.state = ColorPeg.state_list[curr_ind]
-        else:
-            self.state = ColorPeg.state_list[0]
-        print("end - self.state : " + self.state.name + " : " + str(curr_ind))
-
-    def set_peg_size(self, p_size):        
-        self.empty_size = (p_size/20.0) * 2
-        self.size = (p_size/20.0) * 4
-
-    def clicked_on_peg(self, x_coord, y_coord):
-        clicked_on = False
-        if x_coord < self.x_loc + self.size and \
-           x_coord > self.x_loc - self.size and \
-           y_coord < self.y_loc + self.size and \
-           y_coord > self.y_loc - self.size and \
-           self.isClickable:
-            print("CLICKED PEG")
-            clicked_on = True
-        return clicked_on
-
-    def move_peg(self, x_pos, y_pos):
-        self.x_loc = x_pos
-        self.y_loc = y_pos
-
-    def __str__(self):
-        out_str = ""
-        out_str += "state : " + self.state.name + "\n"
-        out_str += "x_loc : " + str(self.x_loc) + "\n"
-        out_str += "y_loc : " + str(self.y_loc) + "\n"
-        return out_str
-
-class TextObj():
-    def __init__(self, x_loc, y_loc, text_val):
-        self.x_loc = x_loc
-        self.y_loc = y_loc
-        self.text = text_val
-        self.x_loc_2 = self.x_loc + (len(text_val) * 20)
-        self.y_loc_2 = self.y_loc + 20
-        self.green = "#20FF20"
-        self.black = "#000000"
-        self.color = self.black
-        
-    def is_over_text(self, x_coord, y_coord):
-        hovered_on = False
-        """
-        print("x_coord : " + str(x_coord))
-        print("y_coord : " + str(y_coord))
-        print("self.x_loc + (len(self.text) * 5) : " + str(self.x_loc + (len(self.text) * 5)))
-        print("self.x_loc - (len(self.text) * 5) : " + str(self.x_loc - (len(self.text) * 5)))
-        print("self.y_loc + 10: " + str(self.y_loc + 10))
-        print("self.y_loc - 10 : " + str(self.y_loc - 10))
-        """        
-        
-        if x_coord < self.x_loc + (len(self.text) * 5) and \
-           x_coord > self.x_loc - (len(self.text) * 5) and \
-           y_coord < self.y_loc + 10 and \
-           y_coord > self.y_loc - 10:
-            print("hovered over text : x_coord - " + str(x_coord) + " y_coord - " + str(y_coord))
-            hovered_on = True
-        return hovered_on
-
-    def move_text(self, x_pos, y_pos):
-        self.x_loc = x_pos
-        self.y_loc = y_pos
-        self.x_loc_2 = self.x_loc + (len(self.text) * 20)
-        self.y_loc_2 = self.y_loc + 20
-
 class Mastermind_Class():
     def __init__(self):
         self.game_state = GameStates.SETTING_CODE
@@ -177,10 +31,15 @@ class Mastermind_Class():
 
         self.x_max_size = 600
         self.y_max_size = 1200
+        self.hide_key = False
 
         self.load_settings()
         self.key_color_pegs = []
         self.guess_color_pegs = []
+        self.submit_guess_text = []
+        self.text_values = []
+        self.round_text = [list(range(10, 0, -1))]
+        self.title_text = None
         
         self.window = Tk()
         self.window.title('Mastermind - Beta_0.1')
@@ -193,6 +52,7 @@ class Mastermind_Class():
         self.window.bind("<Configure>", self.configure)
         self.window.bind('<Button-1>', self.click)
         self.window.bind('<Button-2>', self.click)
+        self.window.bind('<Button-3>', self.click)
         self.window.bind('<MouseWheel>', self.click)
         self.window.bind('<Motion>', self.motion)
 
@@ -226,10 +86,12 @@ class Mastermind_Class():
         self.guess_color_pegs = []
         self.score_pegs = []
         self.text_values = []
+        self.submit_guess_text = []        
         
         # Build key location, the top row
         for x in self.x_loc_list:
             self.key_color_pegs.append(ColorPeg(x , self.key_y_loc))
+            self.key_color_pegs[-1].is_clickable = True
         
         # Build guess rows
         for y in self.guess_y_loc_list:
@@ -238,9 +100,9 @@ class Mastermind_Class():
             for x in self.x_loc_list:
                 self.guess_color_pegs[-1].append(ColorPeg(x, y))
         
-        self.text_values.append(TextObj(0, 0, "Comp Start"))
-        self.text_values.append(TextObj(0, 0, "Man Start"))
-        self.title_text = TextObj(0, 0, "Round Number : X")
+        self.text_values.append(TextObj(0, 0, "Random"))
+        self.text_values.append(TextObj(0, 0, "Start"))
+        self.title_text = TextObj(0, 0, "Round Number : N/A")
 
     def refresh_board(self):
         self.set_sizes()
@@ -255,12 +117,13 @@ class Mastermind_Class():
         print("self.x_loc_list[1] : " + str(self.x_loc_list[1]))
         print("self.x_loc_list[2] : " + str(self.x_loc_list[2]))
         print("self.x_loc_list[3] : " + str(self.x_loc_list[3]))
-        """
-        
+        """        
+
         for x, k_peg in zip(self.x_loc_list, self.key_color_pegs):
             k_peg.move_peg(x, self.key_y_loc)
 
         for y, guess_list in zip(self.guess_y_loc_list, self.guess_color_pegs):
+                       
             for x, k_peg in zip(self.x_loc_list, guess_list):
                 k_peg.move_peg(x, y)
 
@@ -291,8 +154,7 @@ class Mastermind_Class():
                                         k_peg.y_loc + k_peg.empty_size, 
                                         fill=k_peg.state.value["color"],
                                         outline=k_peg.peg_outline_color)
-            else:
-                print(k_peg)
+            else:                
                 self.canvas.create_oval(k_peg.x_loc - k_peg.size, 
                                         k_peg.y_loc - k_peg.size, 
                                         k_peg.x_loc + k_peg.size,
@@ -300,11 +162,21 @@ class Mastermind_Class():
                                         fill=k_peg.state.value["color"],
                                         outline=k_peg.peg_outline_color)
 
+        # Cover the key if specified
+        if self.hide_key:
+            self.canvas.create_rectangle((self.x_loc_list[0] - self.x_size / 4),
+                                         (self.key_y_loc - self.y_size / 4),
+                                         (self.x_loc_list[3] + self.x_size / 4),
+                                         (self.key_y_loc + self.y_size / 4),
+                                         fill="#FDFDFD"
+                                        )
+
         # Draw the text stuff now        
         for text in self.text_values:
             self.canvas.create_text(text.x_loc, text.y_loc, font=16, fill=text.color, text=text.text)
 
-        self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font = 18, text=self.title_text.text)
+        # Create title text
+        self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font = 20, text=self.title_text.text)
 
         for k_peg in self.score_pegs:
             k_peg.set_peg_size(self.peg_size_ref)
@@ -333,8 +205,7 @@ class Mastermind_Class():
                                         k_peg.p4_y_loc + k_peg.empty_size, 
                                         fill=k_peg.state.value["color"],
                                         outline=k_peg.peg_outline_color)
-            else:
-                print(k_peg)
+            else:                
                 self.canvas.create_oval(k_peg.p1_x_loc - k_peg.size, 
                                         k_peg.p1_y_loc - k_peg.size, 
                                         k_peg.p1_x_loc + k_peg.size,
@@ -361,7 +232,7 @@ class Mastermind_Class():
                                         outline=k_peg.peg_outline_color)
         
     def click(self, event):
-        print("Event : " + str(event))
+        # print("Event : " + str(event))
         guess_color_pegs_flat = [item for items in self.guess_color_pegs for item in items]
         if(event.num == 1):
             # Left clicked, figure out if they are clicking on a circle
@@ -373,17 +244,23 @@ class Mastermind_Class():
                 if text.color == text.green:
                     self.start_game(text.text)
 
-        elif(event.num == 2):
+        elif(event.num == 3):
             # Left clicked, figure out if they are clicking on a circle
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
                 if k_peg.clicked_on_peg(event.x, event.y):
                     k_peg.cycle_states(False)
 
-        self.refresh_board()
+        elif(event.delta == 120):
+            for k_peg in self.key_color_pegs + guess_color_pegs_flat:
+                if k_peg.clicked_on_peg(event.x, event.y):
+                    k_peg.cycle_states()
 
-    def ignore(self, event):
-        print("ignore")
-        return "break"
+        elif(event.delta == -120):
+            for k_peg in self.key_color_pegs + guess_color_pegs_flat:
+                if k_peg.clicked_on_peg(event.x, event.y):
+                    k_peg.cycle_states(False)
+
+        self.refresh_board()
 
     def configure(self, event):
         """
@@ -414,19 +291,28 @@ class Mastermind_Class():
                 text.color = text.black
         self.refresh_board()
 
+    def set_game_round(self, curr_round):
+        self.game_round = curr_round
+        self.title_text.text = "Round Number : " + str(curr_round)
+
     def start_game(self, game_to_start):
         print("game_to_start : " + game_to_start)
-        if game_to_start == "Comp Start":
+        if game_to_start == "Random":
             self.key_color_pegs[0].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[1].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[2].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[3].state = random.choice(ColorPeg.state_list)
-        elif game_to_start == "Man Start":
-            # Get this to work, it requires a bit more for game mode stuff 
-            pass
+        elif game_to_start == "Start":
+            # If any of the pegs aren't defined, define them, then start (single player game)
+            if self.key_color_pegs[0].state == ColorPeg.States.EMPTY:
+                self.key_color_pegs[0].state = random.choice(ColorPeg.state_list)
+                self.key_color_pegs[1].state = random.choice(ColorPeg.state_list)
+                self.key_color_pegs[2].state = random.choice(ColorPeg.state_list)
+                self.key_color_pegs[3].state = random.choice(ColorPeg.state_list)
 
-        self.game_state = GameStates.STANDARD_PLAY
-        self.game_round = 1
+            self.hide_key = True
+            self.game_state = GameStates.STANDARD_PLAY
+            self.set_game_round(1)
 
     def save_settings(self):
         # TODO: Save settings here
