@@ -6,6 +6,7 @@ class TextObj():
         self.x_loc_2 = self.x_loc + (len(text_val) * 20)
         self.y_loc_2 = self.y_loc + 20
         self.green = "#20FF20"
+        self.red = "#FF2020"
         self.black = "#000000"
         self.color = self.black
         

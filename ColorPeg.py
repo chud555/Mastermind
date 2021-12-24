@@ -30,21 +30,23 @@ class ColorPeg():
     def cycle_states(self, reverse = False):
         curr_list = ColorPeg.state_list
         if reverse:
-            curr_list = ColorPeg.state_list.reverse()
+            curr_list.reverse()
+
+        print("curr_list : " + str(curr_list))
         curr_ind = 0
         # print("start - self.state : " + self.state.name)
-        if self.state in ColorPeg.state_list:
+        if self.state in curr_list:
             x = 0
-            for state in ColorPeg.state_list:
+            for state in curr_list:
                 if self.state == state:
                     curr_ind = x
                 x += 1
             curr_ind += 1
         # print("curr_ind : " + str(curr_ind))
-        if curr_ind < len(ColorPeg.state_list):
-            self.state = ColorPeg.state_list[curr_ind]
+        if curr_ind < len(curr_list):
+            self.state = curr_list[curr_ind]
         else:
-            self.state = ColorPeg.state_list[0]
+            self.state = curr_list[0]
         # print("end - self.state : " + self.state.name + " : " + str(curr_ind))
 
     def set_peg_size(self, p_size):        

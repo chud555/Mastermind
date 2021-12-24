@@ -164,16 +164,19 @@ class Mastermind_Class():
                                     outline=k_peg.peg_outline_color)
 
         for guess_list, round_t, guess_text in zip(self.guess_color_pegs, self.round_text, self.submit_guess_text):
+            make_guess_clickable = False
             if round_t == self.game_round:
                 curr_color= "#20FD20"
+                make_guess_clickable = True
             else:
                 curr_color = "Black"
-            if self.game_round != None:
+            if self.game_round != None and self.game_round != "win" and self.game_round != "lose":
                 if round_t <= self.game_round:
                     self.canvas.create_text(self.x_size / 2, guess_list[0].y_loc, font=("Courier New", int(self.x_size / 5.0)), fill=curr_color, text=str(round_t))
                     self.canvas.create_text(guess_text.x_loc, guess_text.y_loc, font=("Courier New", int(self.x_size / 2.0)), fill=guess_text.color, text=str(guess_text.text))
             for k_peg in guess_list:
-                k_peg.set_peg_size(self.peg_size_ref)                
+                k_peg.set_peg_size(self.peg_size_ref)
+                k_peg.is_clickable = make_guess_clickable               
                 if k_peg.state == ColorPeg.States.EMPTY:
                     curr_size = k_peg.empty_size                    
                 else:                
@@ -198,59 +201,73 @@ class Mastermind_Class():
             self.canvas.create_text(text.x_loc, text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill=text.color, text=text.text)
 
         # Create title text
-        self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), text=self.title_text.text)
+        if self.game_round == "win":
+            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill="Green", text=self.title_text.text)
+        elif self.game_round == "lose":
+            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill="Red", text=self.title_text.text)
+        else:
+            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), text=self.title_text.text)
 
         for k_peg in self.score_pegs:
             k_peg.set_peg_size(self.peg_size_ref)
-            if k_peg.state == ScorePeg.States.EMPTY:
+            if k_peg.state_1 == ScorePeg.States.EMPTY:
                 self.canvas.create_oval(k_peg.p1_x_loc - k_peg.empty_size, 
                                         k_peg.p1_y_loc - k_peg.empty_size, 
                                         k_peg.p1_x_loc + k_peg.empty_size,
                                         k_peg.p1_y_loc + k_peg.empty_size, 
-                                        fill=k_peg.state.value["color"],
+                                        fill=k_peg.state_1.value["color"],
                                         outline=k_peg.peg_outline_color)
-                self.canvas.create_oval(k_peg.p2_x_loc - k_peg.empty_size, 
-                                        k_peg.p2_y_loc - k_peg.empty_size, 
-                                        k_peg.p2_x_loc + k_peg.empty_size,
-                                        k_peg.p2_y_loc + k_peg.empty_size, 
-                                        fill=k_peg.state.value["color"],
-                                        outline=k_peg.peg_outline_color)
-                self.canvas.create_oval(k_peg.p3_x_loc - k_peg.empty_size, 
-                                        k_peg.p3_y_loc - k_peg.empty_size, 
-                                        k_peg.p3_x_loc + k_peg.empty_size,
-                                        k_peg.p3_y_loc + k_peg.empty_size, 
-                                        fill=k_peg.state.value["color"],
-                                        outline=k_peg.peg_outline_color)
-                self.canvas.create_oval(k_peg.p4_x_loc - k_peg.empty_size, 
-                                        k_peg.p4_y_loc - k_peg.empty_size, 
-                                        k_peg.p4_x_loc + k_peg.empty_size,
-                                        k_peg.p4_y_loc + k_peg.empty_size, 
-                                        fill=k_peg.state.value["color"],
-                                        outline=k_peg.peg_outline_color)
-            else:                
+            else:
                 self.canvas.create_oval(k_peg.p1_x_loc - k_peg.size, 
                                         k_peg.p1_y_loc - k_peg.size, 
                                         k_peg.p1_x_loc + k_peg.size,
                                         k_peg.p1_y_loc + k_peg.size, 
-                                        fill=k_peg.state.value["color"],
+                                        fill=k_peg.state_1.value["color"],
                                         outline=k_peg.peg_outline_color)
+
+            if k_peg.state_2 == ScorePeg.States.EMPTY:
+                self.canvas.create_oval(k_peg.p2_x_loc - k_peg.empty_size, 
+                                        k_peg.p2_y_loc - k_peg.empty_size, 
+                                        k_peg.p2_x_loc + k_peg.empty_size,
+                                        k_peg.p2_y_loc + k_peg.empty_size, 
+                                        fill=k_peg.state_2.value["color"],
+                                        outline=k_peg.peg_outline_color)
+            else:
                 self.canvas.create_oval(k_peg.p2_x_loc - k_peg.size, 
                                         k_peg.p2_y_loc - k_peg.size, 
                                         k_peg.p2_x_loc + k_peg.size,
                                         k_peg.p2_y_loc + k_peg.size, 
-                                        fill=k_peg.state.value["color"],
+                                        fill=k_peg.state_2.value["color"],
                                         outline=k_peg.peg_outline_color)
+
+            if k_peg.state_3 == ScorePeg.States.EMPTY:
+                self.canvas.create_oval(k_peg.p3_x_loc - k_peg.empty_size, 
+                                        k_peg.p3_y_loc - k_peg.empty_size, 
+                                        k_peg.p3_x_loc + k_peg.empty_size,
+                                        k_peg.p3_y_loc + k_peg.empty_size, 
+                                        fill=k_peg.state_3.value["color"],
+                                        outline=k_peg.peg_outline_color)
+            else:
                 self.canvas.create_oval(k_peg.p3_x_loc - k_peg.size, 
                                         k_peg.p3_y_loc - k_peg.size, 
                                         k_peg.p3_x_loc + k_peg.size,
                                         k_peg.p3_y_loc + k_peg.size, 
-                                        fill=k_peg.state.value["color"],
+                                        fill=k_peg.state_3.value["color"],
                                         outline=k_peg.peg_outline_color)
+
+            if k_peg.state_4 == ScorePeg.States.EMPTY:
+                self.canvas.create_oval(k_peg.p4_x_loc - k_peg.empty_size, 
+                                        k_peg.p4_y_loc - k_peg.empty_size, 
+                                        k_peg.p4_x_loc + k_peg.empty_size,
+                                        k_peg.p4_y_loc + k_peg.empty_size, 
+                                        fill=k_peg.state_4.value["color"],
+                                        outline=k_peg.peg_outline_color)
+            else:
                 self.canvas.create_oval(k_peg.p4_x_loc - k_peg.size, 
                                         k_peg.p4_y_loc - k_peg.size, 
                                         k_peg.p4_x_loc + k_peg.size,
                                         k_peg.p4_y_loc + k_peg.size, 
-                                        fill=k_peg.state.value["color"],
+                                        fill=k_peg.state_4.value["color"],
                                         outline=k_peg.peg_outline_color)
         
     def click(self, event):
@@ -266,11 +283,21 @@ class Mastermind_Class():
                 if text.color == text.green:
                     self.start_game(text.text)
 
+            for text in self.submit_guess_text:
+                if text.color == text.green:
+                    # At this point a real guess is put in
+                    if self.score_round():
+                        self.set_game_round("win")
+                    elif self.game_round == 10:
+                        self.set_game_round("lose")
+                    else:
+                        self.set_game_round(self.game_round + 1)
+
         elif(event.num == 3):
             # Left clicked, figure out if they are clicking on a circle
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
                 if k_peg.clicked_on_peg(event.x, event.y):
-                    k_peg.cycle_states(False)
+                    k_peg.cycle_states(True)
 
         elif(event.delta == 120):
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
@@ -280,9 +307,61 @@ class Mastermind_Class():
         elif(event.delta == -120):
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
                 if k_peg.clicked_on_peg(event.x, event.y):
-                    k_peg.cycle_states(False)
+                    k_peg.cycle_states(True)
 
         self.refresh_board()
+
+    def score_round(self):
+        score_list = [ScorePeg.States.EMPTY, \
+                      ScorePeg.States.EMPTY, \
+                      ScorePeg.States.EMPTY, \
+                      ScorePeg.States.EMPTY]
+        if (self.game_round != "win" and self.game_round != "lose"):
+            curr_ind = 10 - self.game_round
+        white_check_list = []
+        # Check for black peg matches first
+        for i in list(range(1, 5, 1)):
+            """
+            print("i : " + str(i))
+            print("self.guess_color_pegs[curr_ind] : " + str(self.guess_color_pegs[curr_ind]))
+            print("self.guess_color_pegs[curr_ind][i - 1] : " + str(self.guess_color_pegs[curr_ind][i - 1]))
+            """
+            if self.guess_color_pegs[curr_ind][i - 1].state == self.key_color_pegs[i - 1].state:
+                score_list[i - 1] = ScorePeg.States.BLACK
+            else:
+                white_check_list.append(self.key_color_pegs[i - 1].state)
+        for i in list(range(1, 5, 1)):
+            if score_list[i - 1] != ScorePeg.States.BLACK and self.guess_color_pegs[curr_ind][i - 1].state in white_check_list:
+                white_check_list.remove(self.guess_color_pegs[curr_ind][i - 1].state)
+                score_list[i - 1] = ScorePeg.States.WHITE
+
+        print("score_list : " + str(score_list))
+        for x in score_list:
+            if x == ScorePeg.States.BLACK:
+                if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_1 = ScorePeg.States.BLACK
+                elif self.score_pegs[curr_ind].state_2 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_2 = ScorePeg.States.BLACK
+                elif self.score_pegs[curr_ind].state_3 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_3 = ScorePeg.States.BLACK
+                elif self.score_pegs[curr_ind].state_4 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_4 = ScorePeg.States.BLACK
+            elif x == ScorePeg.States.WHITE:
+                if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_1 = ScorePeg.States.WHITE
+                elif self.score_pegs[curr_ind].state_2 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_2 = ScorePeg.States.WHITE
+                elif self.score_pegs[curr_ind].state_3 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_3 = ScorePeg.States.WHITE
+                elif self.score_pegs[curr_ind].state_4 == ScorePeg.States.EMPTY:
+                    self.score_pegs[curr_ind].state_4 = ScorePeg.States.WHITE
+        
+        correct_guess = self.score_pegs[curr_ind].state_1 == ScorePeg.States.BLACK and \
+                        self.score_pegs[curr_ind].state_2 == ScorePeg.States.BLACK and \
+                        self.score_pegs[curr_ind].state_3 == ScorePeg.States.BLACK and \
+                        self.score_pegs[curr_ind].state_3 == ScorePeg.States.BLACK
+
+        return correct_guess
 
     def configure(self, event):
         """
@@ -312,16 +391,30 @@ class Mastermind_Class():
             else:
                 text.color = text.black
         
-        for text in self.submit_guess_text:
-            if text.is_over_text(event.x, event.y):
-                text.color = text.green
-            else:
-                text.color = text.black
+        if self.game_round != None and self.game_round != "win" and self.game_round != "lose":
+            for text in self.submit_guess_text:
+                curr_ind = 10 - self.game_round
+                if text.is_over_text(event.x, event.y):
+                    # Can't click if there's empty spaces
+                    if self.guess_color_pegs[curr_ind][0].state == ColorPeg.States.EMPTY or \
+                       self.guess_color_pegs[curr_ind][1].state == ColorPeg.States.EMPTY or \
+                       self.guess_color_pegs[curr_ind][2].state == ColorPeg.States.EMPTY or \
+                       self.guess_color_pegs[curr_ind][3].state == ColorPeg.States.EMPTY:
+                        text.color = text.red
+                    else:
+                        text.color = text.green
+                else:
+                    text.color = text.black
         self.refresh_board()
 
     def set_game_round(self, curr_round):
         self.game_round = curr_round
-        self.title_text.text = "Round Number : " + str(curr_round)
+        if curr_round == "win":
+            self.title_text.text = "YOU WIN!!!"
+        elif curr_round == "lose":
+            self.title_text.text = "YOU LOSE!!!"
+        else:
+            self.title_text.text = "Round Number : " + str(curr_round)
 
     def start_game(self, game_to_start):
         print("game_to_start : " + game_to_start)
@@ -331,16 +424,18 @@ class Mastermind_Class():
             self.key_color_pegs[2].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[3].state = random.choice(ColorPeg.state_list)
         elif game_to_start == "Start":
+            self.initialize_board()
+            self.refresh_board()
             # If any of the pegs aren't defined, define them, then start (single player game)
-            if self.key_color_pegs[0].state == ColorPeg.States.EMPTY or \
-               self.key_color_pegs[1].state == ColorPeg.States.EMPTY or \
-               self.key_color_pegs[2].state == ColorPeg.States.EMPTY or \
-               self.key_color_pegs[3].state == ColorPeg.States.EMPTY:
+            if self.key_color_pegs[0].state == ColorPeg.States.EMPTY:
                 self.key_color_pegs[0].state = random.choice(ColorPeg.state_list)
+            if self.key_color_pegs[1].state == ColorPeg.States.EMPTY:
                 self.key_color_pegs[1].state = random.choice(ColorPeg.state_list)
+            if self.key_color_pegs[2].state == ColorPeg.States.EMPTY:
                 self.key_color_pegs[2].state = random.choice(ColorPeg.state_list)
+            if self.key_color_pegs[3].state == ColorPeg.States.EMPTY:
                 self.key_color_pegs[3].state = random.choice(ColorPeg.state_list)
-
+                
             self.hide_key = True
             self.game_state = GameStates.STANDARD_PLAY
             self.set_game_round(1)
