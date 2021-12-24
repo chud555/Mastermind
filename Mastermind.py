@@ -188,14 +188,6 @@ class Mastermind_Class():
                                         fill=k_peg.state.value["color"],
                                         outline=k_peg.peg_outline_color)
 
-        # Cover the key if specified
-        if self.hide_key:
-            self.canvas.create_rectangle((self.x_loc_list[0] - self.x_size / 4),
-                                         (self.key_y_loc - self.y_size / 4),
-                                         (self.x_loc_list[3] + self.x_size / 4),
-                                         (self.key_y_loc + self.y_size / 4),
-                                         fill="#D0D0D0")
-
         # Draw the text stuff now        
         for text in self.text_values:
             self.canvas.create_text(text.x_loc, text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill=text.color, text=text.text)
@@ -203,10 +195,20 @@ class Mastermind_Class():
         # Create title text
         if self.game_round == "win":
             self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill="Green", text=self.title_text.text)
+            self.hide_key = False
         elif self.game_round == "lose":
             self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill="Red", text=self.title_text.text)
+            self.hide_key = False
         else:
             self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), text=self.title_text.text)
+
+        # Cover the key if specified
+        if self.hide_key:
+            self.canvas.create_rectangle((self.x_loc_list[0] - self.x_size / 4),
+                                         (self.key_y_loc - self.y_size / 4),
+                                         (self.x_loc_list[3] + self.x_size / 4),
+                                         (self.key_y_loc + self.y_size / 4),
+                                         fill="#D0D0D0")
 
         for k_peg in self.score_pegs:
             k_peg.set_peg_size(self.peg_size_ref)
@@ -276,12 +278,18 @@ class Mastermind_Class():
         if(event.num == 1):
             # Left clicked, figure out if they are clicking on a circle
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
-                if k_peg.clicked_on_peg(event.x, event.y):
-                    k_peg.cycle_states()
+                if k_peg in self.key_color_pegs and self.hide_key == True:
+                    pass
+                    # This triggers too much to clear here
+                    # print("Would unhide here...")
+                    # self.hide_key = False
+                else:
+                    if k_peg.clicked_on_peg(event.x, event.y):
+                        k_peg.cycle_states()
 
             for text in self.text_values:
                 if text.color == text.green:
-                    self.start_game(text.text)
+                    self.option_click(text.text)
 
             for text in self.submit_guess_text:
                 if text.color == text.green:
@@ -335,7 +343,7 @@ class Mastermind_Class():
                 white_check_list.remove(self.guess_color_pegs[curr_ind][i - 1].state)
                 score_list[i - 1] = ScorePeg.States.WHITE
 
-        print("score_list : " + str(score_list))
+        # print("score_list : " + str(score_list))
         for x in score_list:
             if x == ScorePeg.States.BLACK:
                 if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
@@ -359,7 +367,7 @@ class Mastermind_Class():
         correct_guess = self.score_pegs[curr_ind].state_1 == ScorePeg.States.BLACK and \
                         self.score_pegs[curr_ind].state_2 == ScorePeg.States.BLACK and \
                         self.score_pegs[curr_ind].state_3 == ScorePeg.States.BLACK and \
-                        self.score_pegs[curr_ind].state_3 == ScorePeg.States.BLACK
+                        self.score_pegs[curr_ind].state_4 == ScorePeg.States.BLACK
 
         return correct_guess
 
@@ -416,8 +424,8 @@ class Mastermind_Class():
         else:
             self.title_text.text = "Round Number : " + str(curr_round)
 
-    def start_game(self, game_to_start):
-        print("game_to_start : " + game_to_start)
+    def option_click(self, game_to_start):
+        print("option clicked : " + game_to_start)
         if game_to_start == "Random":
             self.key_color_pegs[0].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[1].state = random.choice(ColorPeg.state_list)

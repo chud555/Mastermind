@@ -29,10 +29,7 @@ class ColorPeg():
 
     def cycle_states(self, reverse = False):
         curr_list = ColorPeg.state_list
-        if reverse:
-            curr_list.reverse()
-
-        print("curr_list : " + str(curr_list))
+        # print("curr_list : " + str(curr_list))
         curr_ind = 0
         # print("start - self.state : " + self.state.name)
         if self.state in curr_list:
@@ -41,10 +38,15 @@ class ColorPeg():
                 if self.state == state:
                     curr_ind = x
                 x += 1
-            curr_ind += 1
+            if reverse:
+                curr_ind -= 1
+            else:
+                curr_ind += 1
         # print("curr_ind : " + str(curr_ind))
         if curr_ind < len(curr_list):
             self.state = curr_list[curr_ind]
+        elif curr_ind < 0:
+            self.state = curr_list[-1]
         else:
             self.state = curr_list[0]
         # print("end - self.state : " + self.state.name + " : " + str(curr_ind))
