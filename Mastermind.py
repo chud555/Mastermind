@@ -1,12 +1,10 @@
 from tkinter import *
 from enum import Enum
-import collections, traceback, random
 from ColorPeg import ColorPeg
 from ScorePeg import ScorePeg
 from TextObj import TextObj
 from ResizingCanvas import ResizingCanvas
-from winsound import *
-import pygame
+import pygame, random
 
 # References :
 #
@@ -22,14 +20,12 @@ import pygame
 GAME_VERSION = "Beta_0.1"
 
 class GameStates(Enum):
-    SETTING_CODE = 0
-    COMPUTER_SETTING_CODE = 1
-    SCORING = 2
-    STANDARD_PLAY = 3
+    SETTING_KEY = 0    
+    STANDARD_PLAY = 1
 
 class Mastermind_Class():
     def __init__(self):
-        self.game_state = GameStates.SETTING_CODE
+        self.game_state = GameStates.SETTING_KEY
         self.game_round = None
         self.resizing = False
         
@@ -39,12 +35,12 @@ class Mastermind_Class():
         self.x_min_size = 200
         self.y_min_size = 400
 
-        self.x_max_size = 600
-        self.y_max_size = 1200
+        self.x_max_size = 3440
+        self.y_max_size = 1440
         self.hide_key = False
 
         self.load_settings()
-        self.key_color_pegs = []
+        self.key_color_pegs = []        
         self.guess_color_pegs = []
         self.submit_guess_text = []
         self.text_values = []
@@ -59,10 +55,8 @@ class Mastermind_Class():
         self.canvas = ResizingCanvas(self.frame, width=self.x_size_of_board, height=self.y_size_of_board, highlightthickness = 0)
         self.canvas.pack(fill=BOTH, expand=YES)
         self.window.minsize(self.x_min_size, self.y_min_size)
-        self.window.maxsize(self.x_max_size, self.y_max_size)
-        # self.p_start_button = Button(self.frame, text = "Start", command=self.player_start)
+        self.window.maxsize(self.x_max_size, self.y_max_size)        
 
-        # self.window.bind("<Configure>", self.configure)
         self.window.bind("<Button-1>", self.click)
         self.window.bind("<Button-2>", self.click)
         self.window.bind("<Button-3>", self.click)
@@ -72,8 +66,7 @@ class Mastermind_Class():
         self.window.bind("<KeyRelease>", self.release_key)
 
         self.set_sizes()
-        self.initialize_board()
-        self.play_again()
+        self.initialize_board()        
 
     def set_sizes(self):
         self.x_size = self.canvas.width / 8
@@ -94,20 +87,18 @@ class Mastermind_Class():
 
         self.guess_y_loc_list = list(range(int(self.guess_y_first_loc), int(self.y_size * 12), int(self.y_size)))
 
-    def initialize_board(self):
+    def initialize_board(self, initialize_key = True):
         # Set all sizes used here, all based off the window sizes
         # 6 x columns, 12 y columns for now, base everything on that
-        self.key_color_pegs = []
+        if initialize_key:
+            self.key_color_pegs = []
+            # Build key location, the top row
+            for x in self.x_loc_list:
+                self.key_color_pegs.append(ColorPeg(x , self.key_y_loc))
+                self.key_color_pegs[-1].is_clickable = True
+        
         self.guess_color_pegs = []
         self.score_pegs = []
-        self.text_values = []
-        self.submit_guess_text = []        
-        
-        # Build key location, the top row
-        for x in self.x_loc_list:
-            self.key_color_pegs.append(ColorPeg(x , self.key_y_loc))
-            self.key_color_pegs[-1].is_clickable = True
-        
         # Build guess rows
         for y in self.guess_y_loc_list:
             self.guess_color_pegs.append([])
@@ -115,10 +106,12 @@ class Mastermind_Class():
             for x in self.x_loc_list:
                 self.guess_color_pegs[-1].append(ColorPeg(x, y))
         
+        self.text_values = []
         self.text_values.append(TextObj(0, 0, "Random"))
         self.text_values.append(TextObj(0, 0, "Start"))
         self.title_text = TextObj(0, 0, "Round Number : N/A")
 
+        self.submit_guess_text = []
         for y in self.guess_y_loc_list:
             self.submit_guess_text.append(TextObj(0, 0, "X"))
 
@@ -300,22 +293,24 @@ class Mastermind_Class():
         if(event.num == 1):
             # Left clicked, figure out if they are clicking on a circle
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
+                """
                 if k_peg in self.key_color_pegs and self.hide_key == True:
                     pass
                     # This triggers too much to clear here
                     # print("Would unhide here...")
                     # self.hide_key = False
                 else:
-                    if k_peg.clicked_on_peg(event.x, event.y):                        
-                        k_peg.cycle_states()
-                        self.click_sound()
+                """
+                if k_peg.clicked_on_peg(event.x, event.y):                        
+                    k_peg.cycle_states()
+                    self.click_sound()
 
             for text in self.text_values:
                 if text.color == text.green:
                     self.option_click(text.text)
 
             for text in self.submit_guess_text:
-                if text.color == text.green:
+                if text.color == text.green and self.game_round != "win" and self.game_round != "lose":
                     # At this point a real guess is put in
                     if self.score_round():
                         self.set_game_round("win")
@@ -346,63 +341,67 @@ class Mastermind_Class():
         self.refresh_board()
 
     def cheat(self, event):
-        print("Event : " + str(event))
+        # print("Event : " + str(event))
         self.hide_key = False
         self.refresh_board()
 
     def release_key(self, event):
-        print("Event : " + str(event))
+        # print("Event : " + str(event))
+        self.hide_key = True
         self.refresh_board() 
 
     def score_round(self):
+        correct_guess = False
+
         score_list = [ScorePeg.States.EMPTY, \
                       ScorePeg.States.EMPTY, \
                       ScorePeg.States.EMPTY, \
                       ScorePeg.States.EMPTY]
+
         if (self.game_round != "win" and self.game_round != "lose"):
             curr_ind = 10 - self.game_round
-        white_check_list = []
-        # Check for black peg matches first
-        for i in list(range(1, 5, 1)):
-            """
-            print("i : " + str(i))
-            print("self.guess_color_pegs[curr_ind] : " + str(self.guess_color_pegs[curr_ind]))
-            print("self.guess_color_pegs[curr_ind][i - 1] : " + str(self.guess_color_pegs[curr_ind][i - 1]))
-            """
-            if self.guess_color_pegs[curr_ind][i - 1].state == self.key_color_pegs[i - 1].state:
-                score_list[i - 1] = ScorePeg.States.BLACK
-            else:
-                white_check_list.append(self.key_color_pegs[i - 1].state)
-        for i in list(range(1, 5, 1)):
-            if score_list[i - 1] != ScorePeg.States.BLACK and self.guess_color_pegs[curr_ind][i - 1].state in white_check_list:
-                white_check_list.remove(self.guess_color_pegs[curr_ind][i - 1].state)
-                score_list[i - 1] = ScorePeg.States.WHITE
+            white_check_list = []
+            # Check for black peg matches first
+            for i in list(range(1, 5, 1)):
+                """
+                print("i : " + str(i))
+                print("self.guess_color_pegs[curr_ind] : " + str(self.guess_color_pegs[curr_ind]))
+                print("self.guess_color_pegs[curr_ind][i - 1] : " + str(self.guess_color_pegs[curr_ind][i - 1]))
+                """
+                if self.guess_color_pegs[curr_ind][i - 1].state == self.key_color_pegs[i - 1].state:
+                    score_list[i - 1] = ScorePeg.States.BLACK
+                else:
+                    white_check_list.append(self.key_color_pegs[i - 1].state)
+            for i in list(range(1, 5, 1)):
+                if score_list[i - 1] != ScorePeg.States.BLACK and self.guess_color_pegs[curr_ind][i - 1].state in white_check_list:
+                    white_check_list.remove(self.guess_color_pegs[curr_ind][i - 1].state)
+                    score_list[i - 1] = ScorePeg.States.WHITE
 
-        # print("score_list : " + str(score_list))
-        for x in score_list:
-            if x == ScorePeg.States.BLACK:
-                if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_1 = ScorePeg.States.BLACK
-                elif self.score_pegs[curr_ind].state_2 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_2 = ScorePeg.States.BLACK
-                elif self.score_pegs[curr_ind].state_3 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_3 = ScorePeg.States.BLACK
-                elif self.score_pegs[curr_ind].state_4 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_4 = ScorePeg.States.BLACK
-            elif x == ScorePeg.States.WHITE:
-                if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_1 = ScorePeg.States.WHITE
-                elif self.score_pegs[curr_ind].state_2 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_2 = ScorePeg.States.WHITE
-                elif self.score_pegs[curr_ind].state_3 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_3 = ScorePeg.States.WHITE
-                elif self.score_pegs[curr_ind].state_4 == ScorePeg.States.EMPTY:
-                    self.score_pegs[curr_ind].state_4 = ScorePeg.States.WHITE
-        
-        correct_guess = self.score_pegs[curr_ind].state_1 == ScorePeg.States.BLACK and \
-                        self.score_pegs[curr_ind].state_2 == ScorePeg.States.BLACK and \
-                        self.score_pegs[curr_ind].state_3 == ScorePeg.States.BLACK and \
-                        self.score_pegs[curr_ind].state_4 == ScorePeg.States.BLACK
+            # print("score_list : " + str(score_list))
+            for x in score_list:
+                if x == ScorePeg.States.BLACK:
+                    if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_1 = ScorePeg.States.BLACK
+                    elif self.score_pegs[curr_ind].state_2 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_2 = ScorePeg.States.BLACK
+                    elif self.score_pegs[curr_ind].state_3 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_3 = ScorePeg.States.BLACK
+                    elif self.score_pegs[curr_ind].state_4 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_4 = ScorePeg.States.BLACK
+                elif x == ScorePeg.States.WHITE:
+                    if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_1 = ScorePeg.States.WHITE
+                    elif self.score_pegs[curr_ind].state_2 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_2 = ScorePeg.States.WHITE
+                    elif self.score_pegs[curr_ind].state_3 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_3 = ScorePeg.States.WHITE
+                    elif self.score_pegs[curr_ind].state_4 == ScorePeg.States.EMPTY:
+                        self.score_pegs[curr_ind].state_4 = ScorePeg.States.WHITE
+            
+            correct_guess = self.score_pegs[curr_ind].state_1 == ScorePeg.States.BLACK and \
+                            self.score_pegs[curr_ind].state_2 == ScorePeg.States.BLACK and \
+                            self.score_pegs[curr_ind].state_3 == ScorePeg.States.BLACK and \
+                            self.score_pegs[curr_ind].state_4 == ScorePeg.States.BLACK
 
         return correct_guess
     
@@ -443,29 +442,21 @@ class Mastermind_Class():
         else:
             self.title_text.text = "Round Number : " + str(curr_round)
 
-    def option_click(self, game_to_start):
-        print("option clicked : " + game_to_start)
+    def option_click(self, game_to_start):        
         if game_to_start == "Random":
             self.key_color_pegs[0].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[1].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[2].state = random.choice(ColorPeg.state_list)
             self.key_color_pegs[3].state = random.choice(ColorPeg.state_list)
+
         elif game_to_start == "Start":
-            self.initialize_board()
-            self.refresh_board()
+            self.refresh_board()            
             # If any of the pegs aren't defined, define them, then start (single player game)
-            if self.key_color_pegs[0].state == ColorPeg.States.EMPTY:
-                self.key_color_pegs[0].state = random.choice(ColorPeg.state_list)
-            if self.key_color_pegs[1].state == ColorPeg.States.EMPTY:
-                self.key_color_pegs[1].state = random.choice(ColorPeg.state_list)
-            if self.key_color_pegs[2].state == ColorPeg.States.EMPTY:
-                self.key_color_pegs[2].state = random.choice(ColorPeg.state_list)
-            if self.key_color_pegs[3].state == ColorPeg.States.EMPTY:
-                self.key_color_pegs[3].state = random.choice(ColorPeg.state_list)
+            for k_peg in self.key_color_pegs:
+                if k_peg.state == ColorPeg.States.EMPTY:                
+                    k_peg.state = random.choice(ColorPeg.state_list)            
                 
-            self.hide_key = True
-            self.game_state = GameStates.STANDARD_PLAY
-            self.set_game_round(1)
+            self.play_again()           
 
     def save_settings(self):
         # TODO: Save settings here
@@ -478,12 +469,13 @@ class Mastermind_Class():
         self.save_settings()
         self.window.destroy()
 
-    def play_again(self):        
-        self.refresh_board()
+    def play_again(self):
+        self.initialize_board(initialize_key = False)
 
-    def player_start(self):
-        for peg in self.key_color_pegs:
-            peg.isClickable = True
+        self.hide_key = True
+        self.game_state = GameStates.STANDARD_PLAY
+        self.set_game_round(1)     
+        self.refresh_board()
 
 if __name__ == "__main__":
     mc = Mastermind_Class()
