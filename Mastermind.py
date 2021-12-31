@@ -4,6 +4,7 @@ import collections, traceback, random
 from ColorPeg import ColorPeg
 from ScorePeg import ScorePeg
 from TextObj import TextObj
+from ResizingCanvas import ResizingCanvas
 
 # References :
 #
@@ -43,15 +44,17 @@ class Mastermind_Class():
         self.round_text = list(range(10, 0, -1))
         self.title_text = None
         
-        self.window = Tk()
+        self.window = Tk()        
         self.window.title('Mastermind - Beta_0.1')
-        self.canvas = Canvas(self.window, width=self.x_size_of_board, height=self.y_size_of_board)
-        self.canvas.pack()
+        self.frame = Frame(self.window)
+        self.frame.pack(fill=BOTH, expand=YES)
+        self.canvas = ResizingCanvas(self.frame, width=self.x_size_of_board, height=self.y_size_of_board, highlightthickness = 0)
+        self.canvas.pack(fill=BOTH, expand=YES)
         self.window.minsize(self.x_min_size, self.y_min_size)
         self.window.maxsize(self.x_max_size, self.y_max_size)
-        self.p_start_button = Button(self.window, text = "Start", command=self.player_start)
+        # self.p_start_button = Button(self.frame, text = "Start", command=self.player_start)
 
-        self.window.bind("<Configure>", self.configure)
+        # self.window.bind("<Configure>", self.configure)
         self.window.bind('<Button-1>', self.click)
         self.window.bind('<Button-2>', self.click)
         self.window.bind('<Button-3>', self.click)
@@ -63,8 +66,8 @@ class Mastermind_Class():
         self.play_again()
 
     def set_sizes(self):
-        self.x_size = self.x_size_of_board / 8
-        self.y_size = self.y_size_of_board / 13
+        self.x_size = self.canvas.width / 8
+        self.y_size = self.canvas.height / 13
 
         self.peg_size_ref = self.x_size
         if self.y_size < self.peg_size_ref:
@@ -370,12 +373,13 @@ class Mastermind_Class():
                         self.score_pegs[curr_ind].state_4 == ScorePeg.States.BLACK
 
         return correct_guess
-
+    """
     def configure(self, event):
-        """
-        print("configure event : " + str(event))        
+        print("configure event : " + str(event))
+
+        
         traceback.print_stack()
-        """
+        
         if not self.resizing and not (event.width == 404 and event.height == 804):
             print("in resizing")
             print("event.width : " + str(event.width))
@@ -386,6 +390,16 @@ class Mastermind_Class():
             self.y_size_of_board = event.height
             self.refresh_board()
             self.resizing = False
+
+        if (event.width != 404 and self.x_size_of_board != event.width) or \
+           (event.height != 804 and self.y_size_of_board != event.height):
+            self.x_size_of_board = event.width
+            self.y_size_of_board = event.height
+            print ("self.x_size_of_board : " + str(self.x_size_of_board))
+            print ("self.y_size_of_board : " + str(self.y_size_of_board))
+            self.canvas = Canvas(self.window, width=self.x_size_of_board, height=self.y_size_of_board)
+            self.refresh_board()
+    """
 
     def motion(self, event):
         """
