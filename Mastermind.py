@@ -5,6 +5,8 @@ from ColorPeg import ColorPeg
 from ScorePeg import ScorePeg
 from TextObj import TextObj
 from ResizingCanvas import ResizingCanvas
+from winsound import *
+import pygame
 
 # References :
 #
@@ -13,6 +15,11 @@ from ResizingCanvas import ResizingCanvas
 # https://github.com/aqeelanwar/Dots-and-Boxes
 # 
 # https://pythonguides.com/python-tkinter-events/
+#
+# Not sure if I'll ever use this, but it seems useful (all bindings in tkinter, or most)
+# https://www.tcl.tk/man/tcl8.6/TkCmd/keysyms.html
+
+GAME_VERSION = "Beta_0.1"
 
 class GameStates(Enum):
     SETTING_CODE = 0
@@ -44,8 +51,9 @@ class Mastermind_Class():
         self.round_text = list(range(10, 0, -1))
         self.title_text = None
         
-        self.window = Tk()        
-        self.window.title('Mastermind - Beta_0.1')
+        self.window = Tk()
+        pygame.init()
+        self.window.title("Mastermind - " + GAME_VERSION)
         self.frame = Frame(self.window)
         self.frame.pack(fill=BOTH, expand=YES)
         self.canvas = ResizingCanvas(self.frame, width=self.x_size_of_board, height=self.y_size_of_board, highlightthickness = 0)
@@ -55,11 +63,13 @@ class Mastermind_Class():
         # self.p_start_button = Button(self.frame, text = "Start", command=self.player_start)
 
         # self.window.bind("<Configure>", self.configure)
-        self.window.bind('<Button-1>', self.click)
-        self.window.bind('<Button-2>', self.click)
-        self.window.bind('<Button-3>', self.click)
-        self.window.bind('<MouseWheel>', self.click)
-        self.window.bind('<Motion>', self.motion)
+        self.window.bind("<Button-1>", self.click)
+        self.window.bind("<Button-2>", self.click)
+        self.window.bind("<Button-3>", self.click)
+        self.window.bind("<MouseWheel>", self.click)
+        self.window.bind("<Motion>", self.motion)
+        self.window.bind("<Control-Key-c>", self.cheat)
+        self.window.bind("<KeyRelease>", self.release_key)
 
         self.set_sizes()
         self.initialize_board()
@@ -275,6 +285,15 @@ class Mastermind_Class():
                                         fill=k_peg.state_4.value["color"],
                                         outline=k_peg.peg_outline_color)
         
+    def click_sound(self):
+        pygame.mixer.music.load("sounds/Click_1.mp3") #Loading File Into Mixer
+        pygame.mixer.music.play() #Playing It In The Whole Device
+        # return PlaySound("sounds\\Click_1.mp3", SND_FILENAME)
+
+    def click_sound_2(self):
+        pygame.mixer.music.load("sounds/Click_2.mp3") #Loading File Into Mixer
+        pygame.mixer.music.play() #Playing It In The Whole Device
+
     def click(self, event):
         # print("Event : " + str(event))
         guess_color_pegs_flat = [item for items in self.guess_color_pegs for item in items]
@@ -287,8 +306,9 @@ class Mastermind_Class():
                     # print("Would unhide here...")
                     # self.hide_key = False
                 else:
-                    if k_peg.clicked_on_peg(event.x, event.y):
+                    if k_peg.clicked_on_peg(event.x, event.y):                        
                         k_peg.cycle_states()
+                        self.click_sound()
 
             for text in self.text_values:
                 if text.color == text.green:
@@ -309,18 +329,30 @@ class Mastermind_Class():
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
                 if k_peg.clicked_on_peg(event.x, event.y):
                     k_peg.cycle_states(True)
+                    self.click_sound()
 
         elif(event.delta == 120):
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
-                if k_peg.clicked_on_peg(event.x, event.y):
+                if k_peg.clicked_on_peg(event.x, event.y):                    
                     k_peg.cycle_states()
+                    self.click_sound()
 
         elif(event.delta == -120):
             for k_peg in self.key_color_pegs + guess_color_pegs_flat:
                 if k_peg.clicked_on_peg(event.x, event.y):
                     k_peg.cycle_states(True)
+                    self.click_sound()
 
         self.refresh_board()
+
+    def cheat(self, event):
+        print("Event : " + str(event))
+        self.hide_key = False
+        self.refresh_board()
+
+    def release_key(self, event):
+        print("Event : " + str(event))
+        self.refresh_board() 
 
     def score_round(self):
         score_list = [ScorePeg.States.EMPTY, \
@@ -373,34 +405,7 @@ class Mastermind_Class():
                         self.score_pegs[curr_ind].state_4 == ScorePeg.States.BLACK
 
         return correct_guess
-    """
-    def configure(self, event):
-        print("configure event : " + str(event))
-
-        
-        traceback.print_stack()
-        
-        if not self.resizing and not (event.width == 404 and event.height == 804):
-            print("in resizing")
-            print("event.width : " + str(event.width))
-            print("event.height : " + str(event.height))
-            
-            self.resizing = True   
-            self.x_size_of_board = event.width
-            self.y_size_of_board = event.height
-            self.refresh_board()
-            self.resizing = False
-
-        if (event.width != 404 and self.x_size_of_board != event.width) or \
-           (event.height != 804 and self.y_size_of_board != event.height):
-            self.x_size_of_board = event.width
-            self.y_size_of_board = event.height
-            print ("self.x_size_of_board : " + str(self.x_size_of_board))
-            print ("self.y_size_of_board : " + str(self.y_size_of_board))
-            self.canvas = Canvas(self.window, width=self.x_size_of_board, height=self.y_size_of_board)
-            self.refresh_board()
-    """
-
+    
     def motion(self, event):
         """
         print("movement event : " + str(event))
