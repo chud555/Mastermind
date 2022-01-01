@@ -1,8 +1,12 @@
 from tkinter import Canvas
 
-class ResizingCanvas(Canvas):
-    def __init__(self,parent,**kwargs):
-        Canvas.__init__(self,parent,**kwargs)
+class CanvasContainer(Canvas):
+    default_x_size = 400
+    default_y_size = 800
+
+    
+    def __init__(self,parent):
+        Canvas.__init__(self,parent, width=CanvasContainer.default_x_size, height=CanvasContainer.default_y_size, highlightthickness = 0)
         self.bind("<Configure>", self.on_resize)
         self.height = self.winfo_reqheight()
         self.width = self.winfo_reqwidth()
@@ -17,3 +21,9 @@ class ResizingCanvas(Canvas):
         self.config(width=self.width, height=self.height)
         # rescale all the objects tagged with the "all" tag
         self.scale("all",0,0,wscale,hscale)
+
+    def __str__(self):
+        out_str = ""
+        out_str += "self.width  : " + str(self.width) + "\n"
+        out_str += "self.height : " + str(self.height) + "\n"
+        return out_str

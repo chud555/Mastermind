@@ -1,11 +1,13 @@
 from tkinter import *
-from enum import Enum
 from ColorPeg import ColorPeg
 from ScorePeg import ScorePeg
 from TextObj import TextObj
-from ResizingCanvas import ResizingCanvas
+from Settings import Settings
+from Globals import Globals
+from CanvasContainer import CanvasContainer
 import pygame, random
 
+##############################################################################################################
 # References :
 #
 # Good starting tutorial with tutorial code:
@@ -16,30 +18,20 @@ import pygame, random
 #
 # Not sure if I'll ever use this, but it seems useful (all bindings in tkinter, or most)
 # https://www.tcl.tk/man/tcl8.6/TkCmd/keysyms.html
+# 
+##############################################################################################################
 
 GAME_VERSION = "Beta_0.1"
 
-class GameStates(Enum):
-    SETTING_KEY = 0    
-    STANDARD_PLAY = 1
-
 class Mastermind_Class():
     def __init__(self):
-        self.game_state = GameStates.SETTING_KEY
+        # This is used for sound effects. Probably could have programmed all of this using this library
+        pygame.init()
+        Settings.load()
+        
         self.game_round = None
         self.resizing = False
-        
-        self.x_size_of_board = 400
-        self.y_size_of_board = 800
-
-        self.x_min_size = 200
-        self.y_min_size = 400
-
-        self.x_max_size = 3440
-        self.y_max_size = 1440
         self.hide_key = False
-
-        self.load_settings()
         self.key_color_pegs = []        
         self.guess_color_pegs = []
         self.submit_guess_text = []
@@ -48,15 +40,7 @@ class Mastermind_Class():
         self.title_text = None
         
         self.window = Tk()
-        pygame.init()
         self.window.title("Mastermind - " + GAME_VERSION)
-        self.frame = Frame(self.window)
-        self.frame.pack(fill=BOTH, expand=YES)
-        self.canvas = ResizingCanvas(self.frame, width=self.x_size_of_board, height=self.y_size_of_board, highlightthickness = 0)
-        self.canvas.pack(fill=BOTH, expand=YES)
-        self.window.minsize(self.x_min_size, self.y_min_size)
-        self.window.maxsize(self.x_max_size, self.y_max_size)        
-
         self.window.bind("<Button-1>", self.click)
         self.window.bind("<Button-2>", self.click)
         self.window.bind("<Button-3>", self.click)
@@ -64,9 +48,20 @@ class Mastermind_Class():
         self.window.bind("<Motion>", self.motion)
         self.window.bind("<Control-Key-c>", self.cheat)
         self.window.bind("<KeyRelease>", self.release_key)
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        self.window.minsize(Globals.WIN_X_MIN_SIZE, Globals.WIN_Y_MIN_SIZE)
+        self.window.maxsize(Globals.WIN_X_MAX_SIZE, Globals.WIN_Y_MAX_SIZE)
+        
+        self.frame = Frame(self.window)
+        self.frame.pack(fill=BOTH, expand=YES)
+        
+        self.canvas = CanvasContainer(self.frame)
+        self.canvas.pack(fill=BOTH, expand=YES)
+        
         self.set_sizes()
-        self.initialize_board()        
+        self.initialize_board()
+        self.refresh_board()
 
     def set_sizes(self):
         self.x_size = self.canvas.width / 8
@@ -458,23 +453,15 @@ class Mastermind_Class():
                 
             self.play_again()           
 
-    def save_settings(self):
-        # TODO: Save settings here
-        pass
-
-    def load_settings(self):
-        pass
-
     def on_closing(self):
-        self.save_settings()
+        Settings.save()
         self.window.destroy()
 
     def play_again(self):
         self.initialize_board(initialize_key = False)
 
-        self.hide_key = True
-        self.game_state = GameStates.STANDARD_PLAY
-        self.set_game_round(1)     
+        self.hide_key = True        
+        self.set_game_round(1)
         self.refresh_board()
 
 if __name__ == "__main__":
