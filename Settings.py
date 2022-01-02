@@ -1,5 +1,5 @@
 # TODO: Figure out what things are needed to store and restore a session
-from CanvasContainer import CanvasContainer
+from GridCanvas import GridCanvas
 from pathlib import Path
 from os.path import exists
 

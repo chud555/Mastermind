@@ -4,7 +4,7 @@ from ScorePeg import ScorePeg
 from TextObj import TextObj
 from Settings import Settings
 from Globals import Globals
-from CanvasContainer import CanvasContainer
+from GridCanvas import GridCanvas
 import pygame, random
 
 ##############################################################################################################
@@ -29,8 +29,7 @@ class Mastermind_Class():
         pygame.init()
         Settings.load()
         
-        self.game_round = None
-        self.resizing = False
+        self.game_round = None        
         self.hide_key = False
         self.key_color_pegs = []        
         self.guess_color_pegs = []
@@ -50,37 +49,18 @@ class Mastermind_Class():
         self.window.bind("<KeyRelease>", self.release_key)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.window.minsize(Globals.WIN_X_MIN_SIZE, Globals.WIN_Y_MIN_SIZE)
-        self.window.maxsize(Globals.WIN_X_MAX_SIZE, Globals.WIN_Y_MAX_SIZE)
+        self.window.minsize(GridCanvas.WIN_X_MIN_SIZE, GridCanvas.WIN_Y_MIN_SIZE)
+        self.window.maxsize(GridCanvas.WIN_X_MAX_SIZE, GridCanvas.WIN_Y_MAX_SIZE)
         
         self.frame = Frame(self.window)
         self.frame.pack(fill=BOTH, expand=YES)
         
-        self.canvas = CanvasContainer(self.frame)
+        self.canvas = GridCanvas(self.frame)
         self.canvas.pack(fill=BOTH, expand=YES)
         
-        self.set_sizes()
+        GridCanvas.set_sizes()
         self.initialize_board()
         self.refresh_board()
-
-    def set_sizes(self):
-        self.x_size = self.canvas.width / 8
-        self.y_size = self.canvas.height / 13
-
-        self.peg_size_ref = self.x_size
-        if self.y_size < self.peg_size_ref:
-            self.peg_size_ref = self.y_size
-
-        self.key_y_loc = self.y_size
-        self.separator_line = self.y_size * 2
-        self.guess_y_first_loc = self.y_size * 3
-        
-        self.x_loc_list = [self.x_size, self.x_size * 2, self.x_size * 3, self.x_size * 4]
-
-        self.score_pegs_x_location = self.x_size * 5
-        self.x_start_text = self.x_size * 6
-
-        self.guess_y_loc_list = list(range(int(self.guess_y_first_loc), int(self.y_size * 12), int(self.y_size)))
 
     def initialize_board(self, initialize_key = True):
         # Set all sizes used here, all based off the window sizes
@@ -88,8 +68,8 @@ class Mastermind_Class():
         if initialize_key:
             self.key_color_pegs = []
             # Build key location, the top row
-            for x in self.x_loc_list:
-                self.key_color_pegs.append(ColorPeg(x , self.key_y_loc))
+            for x in GridCanvas.peg_x_loc_list:
+                self.key_color_pegs.append(ColorPeg(x , GridCanvas.key_y_loc))
                 self.key_color_pegs[-1].is_clickable = True
         
         self.guess_color_pegs = []

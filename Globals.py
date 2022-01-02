@@ -3,8 +3,7 @@
 # Anyway, this is a junk drawer
 
 class Globals():
-    WIN_X_MIN_SIZE = 200
-    WIN_Y_MIN_SIZE = 400
+    NUM_OF_PEGS = 4
+    PEG_IND_LIST = list(range(0, NUM_OF_PEGS, 1))
 
-    WIN_X_MAX_SIZE = 600
-    WIN_Y_MAX_SIZE = 1200
+    NUM_OF_GUESSES = 10    
