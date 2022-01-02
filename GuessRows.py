@@ -5,19 +5,18 @@ from TextObj import TextObj
 
 class GuessRows():
     # There are 10 guess rows, they have 4 distinct pieces, the label, the pegs, the "X" to submit a guess and the score
-    class GuessRow():
-        label = ""
-        peg_list = []
-        submit_guess_text = None
-        score_pegs = None
-
+    class GuessRow():        
         def __init__(self, label, y_loc):
             self.label = str(label)
+            self.y_loc = y_loc
+            self.set_defaults()
+
+        def set_defaults(self):            
             self.peg_list = []
             for ind in Globals.PEG_IND_LIST:
-                self.peg_list.append(GridCanvas.peg_x_loc_list[ind], y_loc)
-            self.submit_guess_text = TextObj(GridCanvas.text_menu_x_loc, y_loc, "X")
-            self.score_pegs = ScorePeg(GridCanvas.score_pegs_x_loc, y_loc, GridCanvas.smallest_step)
+                self.peg_list.append(GridCanvas.peg_x_loc_list[ind], self.y_loc)
+            self.submit_guess_text = TextObj(GridCanvas.text_menu_x_loc, self.y_loc, "X")
+            self.score_pegs = ScorePeg(GridCanvas.score_pegs_x_loc, self.y_loc, GridCanvas.smallest_step)
 
         def score_guess(self):
             correct_guess = False
@@ -46,8 +45,19 @@ class GuessRows():
                         white_check_list.remove(self.guess_color_pegs[curr_ind][i - 1].state)
                         score_list[i - 1] = ScorePeg.States.WHITE
 
+                packed_score_list = []
+                # Pack black pegs, then white pegs
+                temp_ind = 0
+                for sc in score_list:
+                    if sc == ScorePeg.States.BLACK:
+                        packed_score_list[temp_ind] = ScorePeg.States.BLACK
+                        temp_ind += 1
+                    if sc == ScorePeg.States.WHITE:
+                        packed_score_list[temp_ind] = ScorePeg.States.WHITE
+                        temp_ind += 1
+
                 # print("score_list : " + str(score_list))
-                for x in score_list:
+                for x in packed_score_list:
                     if x == ScorePeg.States.BLACK:
                         if self.score_pegs[curr_ind].state_1 == ScorePeg.States.EMPTY:
                             self.score_pegs[curr_ind].state_1 = ScorePeg.States.BLACK
@@ -75,3 +85,5 @@ class GuessRows():
             return correct_guess
 
     guess_row_list = []
+
+    def init_rows():

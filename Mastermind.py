@@ -4,6 +4,7 @@ from ScorePeg import ScorePeg
 from TextObj import TextObj
 from Settings import Settings
 from Globals import Globals
+from KeyPegs import KeyPegs
 from GridCanvas import GridCanvas
 import pygame, random
 
@@ -63,14 +64,7 @@ class Mastermind_Class():
         self.refresh_board()
 
     def initialize_board(self, initialize_key = True):
-        # Set all sizes used here, all based off the window sizes
-        # 6 x columns, 12 y columns for now, base everything on that
-        if initialize_key:
-            self.key_color_pegs = []
-            # Build key location, the top row
-            for x in GridCanvas.peg_x_loc_list:
-                self.key_color_pegs.append(ColorPeg(x , GridCanvas.key_y_loc))
-                self.key_color_pegs[-1].is_clickable = True
+        KeyPegs.init_pegs()
         
         self.guess_color_pegs = []
         self.score_pegs = []

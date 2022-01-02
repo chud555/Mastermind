@@ -18,12 +18,12 @@ class ColorPeg():
                   States.BLUE,  
                   States.YELLOW]
 
-    def __init__(self, x_loc, y_loc):
+    def __init__(self, x_loc, y_loc, is_clickable = False):
         self.peg_outline_color = "#0F0F0F"
         self.state = ColorPeg.States.EMPTY
         self.x_loc = x_loc
         self.y_loc = y_loc
-        self.is_clickable = False        
+        self.is_clickable = is_clickable        
         self.size = 0
         self.empty_size = 0       
 
