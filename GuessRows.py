@@ -85,5 +85,9 @@ class GuessRows():
             return correct_guess
 
     guess_row_list = []
+    guess_rows = []
 
     def init_rows():
+        for ind, y_loc in zip(Globals.GUESS_IND_LIST, GridCanvas.guess_peg_y_loc_list):
+            GuessRows.guess_rows.insert(0, GuessRows.GuessRow(ind, y_loc))
+            

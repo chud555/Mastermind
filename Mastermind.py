@@ -65,15 +65,23 @@ class Mastermind_Class():
 
     def initialize_board(self, initialize_key = True):
         KeyPegs.init_pegs()
+
+        if initialize_key:
+            self.key_color_pegs = []
+            # Build key location, the top row
+            for x in GridCanvas.peg_x_loc_list:
+                self.key_color_pegs.append(ColorPeg(x , GridCanvas.key_y_loc, is_clickable = True))
         
         self.guess_color_pegs = []
         self.score_pegs = []
         # Build guess rows
-        for y in self.guess_y_loc_list:
+        for y in GridCanvas.guess_peg_y_loc_list:
             self.guess_color_pegs.append([])
             self.score_pegs.append(ScorePeg(0, y, 0))
-            for x in self.x_loc_list:
+            for x in GridCanvas.peg_x_loc_list:
                 self.guess_color_pegs[-1].append(ColorPeg(x, y))
+
+        self.separator_line = GridCanvas.curr_y_step * 2
         
         self.text_values = []
         self.text_values.append(TextObj(0, 0, "Random"))
@@ -81,52 +89,52 @@ class Mastermind_Class():
         self.title_text = TextObj(0, 0, "Round Number : N/A")
 
         self.submit_guess_text = []
-        for y in self.guess_y_loc_list:
+        for y in GridCanvas.guess_peg_y_loc_list:
             self.submit_guess_text.append(TextObj(0, 0, "X"))
 
     def refresh_board(self):
-        self.set_sizes()
+        GridCanvas.set_sizes()
         
         """
         print("\n\nself.peg_size_ref : " + str(self.peg_size_ref))
-        print("self.x_size : " + str(self.x_size))
-        print("self.y_size : " + str(self.y_size))
-        print("self.x_size_of_board : " + str(self.x_size_of_board))
-        print("self.y_size_of_board : " + str(self.y_size_of_board))
-        print("self.x_loc_list[0] : " + str(self.x_loc_list[0]))
-        print("self.x_loc_list[1] : " + str(self.x_loc_list[1]))
-        print("self.x_loc_list[2] : " + str(self.x_loc_list[2]))
-        print("self.x_loc_list[3] : " + str(self.x_loc_list[3]))
+        print("GridCanvas.curr_x_step : " + str(GridCanvas.curr_x_step))
+        print("GridCanvas.curr_y_step : " + str(GridCanvas.curr_y_step))
+        print("GridCanvas.curr_x_step_of_board : " + str(GridCanvas.curr_x_step_of_board))
+        print("GridCanvas.curr_y_step_of_board : " + str(GridCanvas.curr_y_step_of_board))
+        print("GridCanvas.peg_x_loc_list[0] : " + str(GridCanvas.peg_x_loc_list[0]))
+        print("GridCanvas.peg_x_loc_list[1] : " + str(GridCanvas.peg_x_loc_list[1]))
+        print("GridCanvas.peg_x_loc_list[2] : " + str(GridCanvas.peg_x_loc_list[2]))
+        print("GridCanvas.peg_x_loc_list[3] : " + str(GridCanvas.peg_x_loc_list[3]))
         """        
 
-        for x, k_peg in zip(self.x_loc_list, self.key_color_pegs):
-            k_peg.move_peg(x, self.key_y_loc)
+        for x, k_peg in zip(GridCanvas.peg_x_loc_list, self.key_color_pegs):
+            k_peg.move_peg(x, GridCanvas.key_y_loc)
 
-        for y, guess_list, sub_text in zip(self.guess_y_loc_list, self.guess_color_pegs, self.submit_guess_text):
-            sub_text.move_text(self.x_start_text, y)
-            for x, k_peg in zip(self.x_loc_list, guess_list):
+        for y, guess_list, sub_text in zip(GridCanvas.guess_peg_y_loc_list, self.guess_color_pegs, self.submit_guess_text):
+            sub_text.move_text(GridCanvas.text_menu_x_loc, y)
+            for x, k_peg in zip(GridCanvas.peg_x_loc_list, guess_list):
                 k_peg.move_peg(x, y)
 
-        for y, s_peg in zip(self.guess_y_loc_list, self.score_pegs):
-            s_peg.move_peg(self.score_pegs_x_location, y)
+        for y, s_peg in zip(GridCanvas.guess_peg_y_loc_list, self.score_pegs):
+            s_peg.move_peg(GridCanvas.score_pegs_x_loc, y)
 
-        text_y = self.key_y_loc
+        text_y = GridCanvas.key_y_loc
         for text in self.text_values:
-            text.move_text(self.x_start_text, text_y)
-            text_y = text_y + self.y_size / 2.0
+            text.move_text(GridCanvas.text_menu_x_loc, text_y)
+            text_y = text_y + GridCanvas.curr_y_step / 2.0
         
-        self.title_text.move_text(self.x_size * 2, self.key_y_loc - 50)
+        self.title_text.move_text(GridCanvas.curr_x_step * 2, GridCanvas.key_y_loc - 50)
 
         self.canvas.delete("all")
 
         # Put a line here before guess pegs
-        self.canvas.create_line(self.x_size / 2.0, self.separator_line, 
-                                self.x_size * 5, self.separator_line, fill="#777777", width=2)
+        self.canvas.create_line(GridCanvas.curr_x_step / 2.0, self.separator_line, 
+                                GridCanvas.curr_x_step * 5, self.separator_line, fill="#777777", width=2)
 
         guess_color_pegs_flat = [item for items in self.guess_color_pegs for item in items]
         
         for k_peg in self.key_color_pegs:
-            k_peg.set_peg_size(self.peg_size_ref)
+            k_peg.set_peg_size(GridCanvas.smallest_step)
             if k_peg.state == ColorPeg.States.EMPTY:
                 curr_size = k_peg.empty_size
             else:                
@@ -147,10 +155,10 @@ class Mastermind_Class():
                 curr_color = "Black"
             if self.game_round != None and self.game_round != "win" and self.game_round != "lose":
                 if round_t <= self.game_round:
-                    self.canvas.create_text(self.x_size / 2, guess_list[0].y_loc, font=("Courier New", int(self.x_size / 5.0)), fill=curr_color, text=str(round_t))
-                    self.canvas.create_text(guess_text.x_loc, guess_text.y_loc, font=("Courier New", int(self.x_size / 2.0)), fill=guess_text.color, text=str(guess_text.text))
+                    self.canvas.create_text(GridCanvas.curr_x_step / 2, guess_list[0].y_loc, font=("Courier New", int(GridCanvas.curr_x_step / 5.0)), fill=curr_color, text=str(round_t))
+                    self.canvas.create_text(guess_text.x_loc, guess_text.y_loc, font=("Courier New", int(GridCanvas.curr_x_step / 2.0)), fill=guess_text.color, text=str(guess_text.text))
             for k_peg in guess_list:
-                k_peg.set_peg_size(self.peg_size_ref)
+                k_peg.set_peg_size(GridCanvas.smallest_step)
                 k_peg.is_clickable = make_guess_clickable               
                 if k_peg.state == ColorPeg.States.EMPTY:
                     curr_size = k_peg.empty_size                    
@@ -165,28 +173,28 @@ class Mastermind_Class():
 
         # Draw the text stuff now        
         for text in self.text_values:
-            self.canvas.create_text(text.x_loc, text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill=text.color, text=text.text)
+            self.canvas.create_text(text.x_loc, text.y_loc, font=("Courier New", int(GridCanvas.curr_x_step / 5.0)), fill=text.color, text=text.text)
 
         # Create title text
         if self.game_round == "win":
-            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill="Green", text=self.title_text.text)
+            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(GridCanvas.curr_x_step / 5.0)), fill="Green", text=self.title_text.text)
             self.hide_key = False
         elif self.game_round == "lose":
-            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), fill="Red", text=self.title_text.text)
+            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(GridCanvas.curr_x_step / 5.0)), fill="Red", text=self.title_text.text)
             self.hide_key = False
         else:
-            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.x_size / 5.0)), text=self.title_text.text)
+            self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(GridCanvas.curr_x_step / 5.0)), text=self.title_text.text)
 
         # Cover the key if specified
         if self.hide_key:
-            self.canvas.create_rectangle((self.x_loc_list[0] - self.x_size / 4),
-                                         (self.key_y_loc - self.y_size / 4),
-                                         (self.x_loc_list[3] + self.x_size / 4),
-                                         (self.key_y_loc + self.y_size / 4),
+            self.canvas.create_rectangle((GridCanvas.peg_x_loc_list[0] - GridCanvas.curr_x_step / 4),
+                                         (GridCanvas.key_y_loc - GridCanvas.curr_y_step / 4),
+                                         (GridCanvas.peg_x_loc_list[3] + GridCanvas.curr_x_step / 4),
+                                         (GridCanvas.key_y_loc + GridCanvas.curr_y_step / 4),
                                          fill="#D0D0D0")
 
         for k_peg in self.score_pegs:
-            k_peg.set_peg_size(self.peg_size_ref)
+            k_peg.set_peg_size(GridCanvas.smallest_step)
             if k_peg.state_1 == ScorePeg.States.EMPTY:
                 self.canvas.create_oval(k_peg.p1_x_loc - k_peg.empty_size, 
                                         k_peg.p1_y_loc - k_peg.empty_size, 

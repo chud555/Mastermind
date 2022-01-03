@@ -3,8 +3,6 @@ from GridCanvas import GridCanvas
 from ColorPeg import ColorPeg
 
 class KeyPegs():
-    me = this
-
     peg_list = []
     hidden = False
     hide_block_color = "#D0D0D0"
