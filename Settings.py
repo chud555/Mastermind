@@ -9,10 +9,10 @@ class Settings():
     settings_f = home_dir + "\\" + settings_file
     
     # The settings list var_name field is variables that can resolved at run time
-    settings_list = [{"var_name":"GridCanvas.curr_x_size", "var_value":"Not Found"},
-                     {"var_name":"GridCanvas.curr_y_size", "var_value":"Not Found"}]
+    settings_list = [{"var_name":"canvas.curr_x_size", "var_value":"Not Found"},
+                     {"var_name":"canvas.curr_y_size", "var_value":"Not Found"}]
 
-    def save():
+    def save(canvas):
         with open(Settings.settings_f, 'w') as fh:
             for setting in Settings.settings_list:
                 print("eval : " + setting["var_name"] + " value : " + str(eval(setting["var_name"])))

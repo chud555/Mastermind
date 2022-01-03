@@ -1,3 +1,4 @@
+import pygame, random
 from enum import Enum
 
 class ColorPeg():
@@ -25,9 +26,20 @@ class ColorPeg():
         self.y_loc = y_loc
         self.is_clickable = is_clickable        
         self.size = 0
-        self.empty_size = 0       
+        self.empty_size = 0
 
-    def cycle_states(self, reverse = False):
+    def clicked_on_peg(self, x_coord, y_coord):
+        clicked_on = False
+        if self.is_clickable and \
+           x_coord < self.x_loc + self.size and \
+           x_coord > self.x_loc - self.size and \
+           y_coord < self.y_loc + self.size and \
+           y_coord > self.y_loc - self.size:
+            clicked_on = True
+        return clicked_on
+
+    def cycle_states(self, forward = True):
+        self.click_sound()
         curr_list = ColorPeg.state_list        
         curr_ind = 0        
         if self.state in curr_list:
@@ -36,34 +48,40 @@ class ColorPeg():
                 if self.state == state:
                     curr_ind = x
                 x += 1
-            if reverse:
-                curr_ind -= 1
+            if forward:
+                curr_ind += 1
             else:
-                curr_ind += 1        
+                curr_ind -= 1
         if curr_ind < len(curr_list):
             self.state = curr_list[curr_ind]
         elif curr_ind < 0:
             self.state = curr_list[-1]
         else:
             self.state = curr_list[0]
+
+    def check_click(self, x_pos, y_pos, forward):
+        if self.clicked_on_peg(x_pos, y_pos):
+            self.cycle_states(forward)
         
     def set_peg_size(self, p_size):        
         self.empty_size = (p_size/20.0) * 2
         self.size = (p_size/20.0) * 4
 
-    def clicked_on_peg(self, x_coord, y_coord):
-        clicked_on = False
-        if x_coord < self.x_loc + self.size and \
-           x_coord > self.x_loc - self.size and \
-           y_coord < self.y_loc + self.size and \
-           y_coord > self.y_loc - self.size and \
-           self.is_clickable:            
-            clicked_on = True
-        return clicked_on
-
     def move_peg(self, x_pos, y_pos):
         self.x_loc = x_pos
         self.y_loc = y_pos
+
+    def click_sound(self):
+        pygame.mixer.music.load("sounds/Click_1.mp3") #Loading File Into Mixer
+        pygame.mixer.music.play() #Playing It In The Whole Device
+        # return PlaySound("sounds\\Click_1.mp3", SND_FILENAME)
+
+    def click_sound_2(self):
+        pygame.mixer.music.load("sounds/Click_2.mp3") #Loading File Into Mixer
+        pygame.mixer.music.play() #Playing It In The Whole Device
+
+    def set_random(self):
+        self.state = random.choice(ColorPeg.state_list)
 
     def __str__(self):
         out_str = ""

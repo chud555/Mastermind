@@ -18,72 +18,78 @@ class GridCanvas(Canvas):
     NUM_X_COLS = Globals.NUM_OF_PEGS + 4
     NUM_Y_ROWS = 13    
 
-    curr_x_size = DEFAULT_X_SIZE
-    curr_y_size = DEFAULT_Y_SIZE
+    def __init__(self, parent):
+        self.parent = parent
+        # TODO: This can be restored from previous sessions eventually        
+        self.curr_x_size = GridCanvas.DEFAULT_X_SIZE
+        self.curr_y_size = GridCanvas.DEFAULT_Y_SIZE
+        Canvas.__init__(self, self.parent.frame, width = self.curr_x_size, height = self.curr_y_size, highlightthickness = 0)        
 
-    # Keeps track of how many pixels are between each col/row
-    curr_x_step = 0
-    curr_y_step = 0
+        self.x_scale = 0
+        self.y_scale = 0
 
-    # This is the number of pixels between rows or columns, whichever is smaller. 
-    # Pegs or Text can use to figure out what size they should be.
-    smallest_step = 0
+        # Keeps track of how many pixels are between each col/row
+        self.curr_x_step = 0
+        self.curr_y_step = 0
 
-    key_y_loc = 0
-    separator_line_y_loc = 0
-    first_guess_y_loc = 0
+        # This is the number of pixels between rows or columns, whichever is smaller. 
+        # Pegs or Text can use to figure out what size they should be.
+        self.smallest_step = 0
 
-    peg_x_loc_list = []
+        self.key_y_loc = 0
+        self.separator_line_y_loc = 0
+        self.first_guess_y_loc = 0
 
-    score_pegs_x_loc = 0
-    text_menu_x_loc = 0
+        self.peg_x_loc_list = []
 
-    guess_peg_y_loc_list = []
+        self.score_pegs_x_loc = 0
+        self.text_menu_x_loc = 0
 
-    def set_sizes():
-        GridCanvas.curr_x_step = GridCanvas.curr_x_size / GridCanvas.NUM_X_COLS
-        GridCanvas.curr_y_step = GridCanvas.curr_y_size / GridCanvas.NUM_Y_ROWS
-
-        GridCanvas.smallest_step = GridCanvas.curr_x_step
-        if GridCanvas.curr_y_step < GridCanvas.smallest_step:
-            GridCanvas.smallest_step = GridCanvas.curr_y_step
-
-        GridCanvas.key_y_loc = GridCanvas.curr_y_step
-        GridCanvas.separator_line_y_loc = GridCanvas.curr_y_step * 2
-        GridCanvas.first_guess_y_loc = GridCanvas.curr_y_step * 3
-        
-        GridCanvas.peg_x_loc_list = [GridCanvas.curr_x_step,
-                                     GridCanvas.curr_x_step * 2,
-                                     GridCanvas.curr_x_step * 3,
-                                     GridCanvas.curr_x_step * 4]
-
-        GridCanvas.score_pegs_x_loc = GridCanvas.curr_x_step * 5
-        GridCanvas.text_menu_x_loc = GridCanvas.curr_x_step * 6
-
-        GridCanvas.guess_peg_y_loc_list = list(range(int(GridCanvas.first_guess_y_loc), 
-                                                     int(GridCanvas.curr_y_step * 12), 
-                                                     int(GridCanvas.curr_y_step)))
-
-    def __init__(self,parent):
-        Canvas.__init__(self,parent, width = GridCanvas.curr_x_size, height = GridCanvas.curr_y_size, highlightthickness = 0)
-        self.bind("<Configure>", self.on_resize)
-        self.height = self.winfo_reqheight()
-        self.width = self.winfo_reqwidth()
-
-    def __str__(self):
-        out_str = ""
-        out_str += "self.width  : " + str(self.width) + "\n"
-        out_str += "self.height : " + str(self.height) + "\n"
-        return out_str
+        self.guess_peg_y_loc_list = []
 
     def on_resize(self,event):
         # determine the ratio of old width/height to new width/height
-        wscale = float(event.width)/self.width
-        hscale = float(event.height)/self.height
-        self.width = event.width
-        self.height = event.height
+        self.x_scale = float(event.width)/self.width
+        self.y_scale = float(event.height)/self.height
+        self.curr_x_size = event.curr_x_step
+        self.curr_y_size = event.curr_y_step
         # resize the canvas 
-        self.config(width=self.width, height=self.height)
+        self.config(width=self.curr_x_size, height=self.curr_y_size)
         # rescale all the objects tagged with the "all" tag
-        self.scale("all",0,0,wscale,hscale)
+        self.scale("all",0,0,self.x_scale,self.y_scale)
+        self.set_sizes()
+        self.parent.refresh_board()
 
+    def set_sizes(self):
+        self.curr_x_step = self.curr_x_size / GridCanvas.NUM_X_COLS
+        self.curr_y_step = self.curr_y_size / GridCanvas.NUM_Y_ROWS
+
+        self.smallest_step = self.curr_x_step
+        if self.curr_y_step < self.smallest_step:
+            self.smallest_step = self.curr_y_step
+
+        self.key_y_loc = self.curr_y_step
+        self.separator_line_y_loc = self.curr_y_step * 2
+        self.first_guess_y_loc = self.curr_y_step * 3
+        
+        self.peg_x_loc_list = [self.curr_x_step,
+                               self.curr_x_step * 2,
+                               self.curr_x_step * 3,
+                               self.curr_x_step * 4]
+
+        self.score_pegs_x_loc = self.curr_x_step * 5
+        self.text_menu_x_loc = self.curr_x_step * 6
+
+        self.guess_peg_y_loc_list = list(range(int(self.first_guess_y_loc), 
+                                               int(self.curr_y_step * 12), 
+                                               int(self.curr_y_step)))
+
+    def __str__(self):
+        out_str = ""
+        out_str += "self.curr_x_size : " + str(self.curr_x_size) + "\n"
+        out_str += "self.curr_y_size : " + str(self.curr_y_size) + "\n"
+        out_str += "self.curr_x_step : " + str(self.curr_x_step) + "\n"
+        out_str += "self.curr_y_step : " + str(self.curr_y_step) + "\n"
+        out_str += "self.x_scale     : " + str(self.x_scale) + "\n"
+        out_str += "self.y_scale     : " + str(self.y_scale) + "\n"
+        return out_str
