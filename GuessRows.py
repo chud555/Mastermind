@@ -161,15 +161,14 @@ class GuessRow():
                     score_list[i - 1] = ScorePeg.States.WHITE
 
             packed_score_list = []
-            # Pack black pegs, then white pegs
-            temp_ind = 0
+            # Pack black pegs, then white pegs            
             for sc in score_list:                
                 if sc == ScorePeg.States.BLACK:
-                    packed_score_list.append(ScorePeg.States.BLACK)
-                    temp_ind += 1
+                    packed_score_list.append(ScorePeg.States.BLACK)                    
+
+            for sc in score_list:
                 if sc == ScorePeg.States.WHITE:
-                    packed_score_list.append(ScorePeg.States.WHITE)
-                    temp_ind += 1
+                    packed_score_list.append(ScorePeg.States.WHITE)                    
 
             # print("score_list : " + str(score_list))
             for x in packed_score_list:
