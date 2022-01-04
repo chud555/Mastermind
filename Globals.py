@@ -7,4 +7,4 @@ class Globals():
     PEG_IND_LIST = list(range(0, NUM_OF_PEGS, 1))
 
     NUM_OF_GUESSES = 10
-    GUESS_IND_LIST = list(range(NUM_OF_GUESSES, 0, -1))
+    GUESS_IND_LIST = list(range(1, 11, 1))

@@ -38,7 +38,8 @@ class ScorePeg():
         self.p4_x_loc = self.x_loc + (self.size_ref)
         self.p4_y_loc = self.y_loc + (self.size_ref) 
     
-    def move_peg(self, x_pos, y_pos):
+    def move_peg(self, x_pos, y_pos, p_size):
         self.x_loc = x_pos
         self.y_loc = y_pos
+        self.set_peg_size(p_size)
         self.set_peg_locations(self.size_ref * 5.0)

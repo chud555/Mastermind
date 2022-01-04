@@ -41,7 +41,7 @@ class ColorPeg():
     def cycle_states(self, forward = True):
         self.click_sound()
         curr_list = ColorPeg.state_list        
-        curr_ind = 0        
+        curr_ind = 0
         if self.state in curr_list:
             x = 0
             for state in curr_list:
@@ -60,7 +60,7 @@ class ColorPeg():
             self.state = curr_list[0]
 
     def check_click(self, x_pos, y_pos, forward):
-        if self.clicked_on_peg(x_pos, y_pos):
+        if self.clicked_on_peg(x_pos, y_pos):            
             self.cycle_states(forward)
         
     def set_peg_size(self, p_size):        
@@ -70,6 +70,19 @@ class ColorPeg():
     def move_peg(self, x_pos, y_pos):
         self.x_loc = x_pos
         self.y_loc = y_pos
+
+    def draw_peg(self, canvas, base_size):
+        self.set_peg_size(base_size)
+        if self.state == ColorPeg.States.EMPTY:
+            curr_size = self.empty_size
+        else:                
+            curr_size = self.size
+        canvas.create_oval(self.x_loc - curr_size, 
+                           self.y_loc - curr_size, 
+                           self.x_loc + curr_size,
+                           self.y_loc + curr_size, 
+                           fill=self.state.value["color"],
+                           outline=self.peg_outline_color)
 
     def click_sound(self):
         pygame.mixer.music.load("sounds/Click_1.mp3") #Loading File Into Mixer
@@ -81,7 +94,7 @@ class ColorPeg():
         pygame.mixer.music.play() #Playing It In The Whole Device
 
     def set_random(self):
-        self.state = random.choice(ColorPeg.state_list)
+        self.state = random.choice(ColorPeg.state_list)        
 
     def __str__(self):
         out_str = ""

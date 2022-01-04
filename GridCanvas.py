@@ -23,7 +23,8 @@ class GridCanvas(Canvas):
         # TODO: This can be restored from previous sessions eventually        
         self.curr_x_size = GridCanvas.DEFAULT_X_SIZE
         self.curr_y_size = GridCanvas.DEFAULT_Y_SIZE
-        Canvas.__init__(self, self.parent.frame, width = self.curr_x_size, height = self.curr_y_size, highlightthickness = 0)        
+        Canvas.__init__(self, self.parent.frame, width = self.curr_x_size, height = self.curr_y_size, highlightthickness = 0)
+        self.bind("<Configure>", self.on_resize)
 
         self.x_scale = 0
         self.y_scale = 0
@@ -49,10 +50,10 @@ class GridCanvas(Canvas):
 
     def on_resize(self,event):
         # determine the ratio of old width/height to new width/height
-        self.x_scale = float(event.width)/self.width
-        self.y_scale = float(event.height)/self.height
-        self.curr_x_size = event.curr_x_step
-        self.curr_y_size = event.curr_y_step
+        self.x_scale = float(event.width)/self.curr_x_size
+        self.y_scale = float(event.height)/self.curr_y_size
+        self.curr_x_size = event.width
+        self.curr_y_size = event.height
         # resize the canvas 
         self.config(width=self.curr_x_size, height=self.curr_y_size)
         # rescale all the objects tagged with the "all" tag
@@ -83,6 +84,8 @@ class GridCanvas(Canvas):
         self.guess_peg_y_loc_list = list(range(int(self.first_guess_y_loc), 
                                                int(self.curr_y_step * 12), 
                                                int(self.curr_y_step)))
+
+        self.guess_peg_y_loc_list.reverse()
 
     def __str__(self):
         out_str = ""
