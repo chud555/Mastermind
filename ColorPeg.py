@@ -85,13 +85,12 @@ class ColorPeg():
                            outline=self.peg_outline_color)
 
     def click_sound(self):
-        pygame.mixer.music.load("sounds/Click_1.mp3") #Loading File Into Mixer
-        pygame.mixer.music.play() #Playing It In The Whole Device
-        # return PlaySound("sounds\\Click_1.mp3", SND_FILENAME)
+        click = pygame.mixer.Sound("sounds/click_1.mp3")
+        pygame.mixer.Sound.play(click)
 
     def click_sound_2(self):
-        pygame.mixer.music.load("sounds/Click_2.mp3") #Loading File Into Mixer
-        pygame.mixer.music.play() #Playing It In The Whole Device
+        click = pygame.mixer.Sound("sounds/click_2.mp3")
+        pygame.mixer.Sound.play(click)
 
     def set_random(self):
         self.state = random.choice(ColorPeg.state_list)        

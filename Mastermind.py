@@ -32,6 +32,7 @@ class Mastermind_Class():
         
         self.game_round = None                
         self.title_text = None
+        self.music_on = False
         
         self.window = Tk()
         self.window.title("Mastermind - " + GAME_VERSION)
@@ -68,6 +69,7 @@ class Mastermind_Class():
         self.text_values = []
         self.text_values.append(TextObj(0, 0, "Random"))
         self.text_values.append(TextObj(0, 0, "Start"))
+        self.text_values.append(TextObj(0, 0, "Music"))
         self.title_text = TextObj(0, 0, "Round Number : N/A")
 
     def refresh_board(self):
@@ -177,16 +179,28 @@ class Mastermind_Class():
 
     def option_click(self, menu_option):        
         if menu_option == "Random":
-            KeyPegs.set_random()
+            if self.game_round == None or self.game_round == "win" or self.game_round == "lose" or self.game_round == 1:
+                print("Randomizing pegs...")
+                KeyPegs.set_random()
 
         elif menu_option == "Start":                  
             # If any of the pegs aren't defined, define them, then start (single player game)
             KeyPegs.set_random(blanks_only = True)                
-            self.play_new_game()           
+            self.play_new_game()
+
+        elif menu_option == "Music":
+            if self.music_on:
+                pygame.mixer.music.stop()
+                self.music_on = False
+            else:
+                pygame.mixer.music.load("sounds/music_for_mastermind.mp3")
+                pygame.mixer.music.play(-1, 0.0)
+                self.music_on = True
 
     def on_closing(self):
+        pygame.quit()
         Settings.save(self.canvas)
-        self.window.destroy()
+        self.window.destroy() 
 
     def play_new_game(self):
         self.initialize_board(initialize_key = False)
