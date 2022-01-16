@@ -1,5 +1,4 @@
 from Globals import Globals
-from GridCanvas import GridCanvas
 from ColorPeg import ColorPeg
 
 # TODO: Using this like a static class, but could make the name shorter when referencing it, maybe using @classmethod

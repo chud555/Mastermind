@@ -85,6 +85,9 @@ class GridCanvas(Canvas):
                                                int(self.curr_y_step * 12), 
                                                int(self.curr_y_step)))
 
+        while len(self.guess_peg_y_loc_list) < 10:
+            self.guess_peg_y_loc_list.append(int(self.guess_peg_y_loc_list[-1] + self.curr_y_step))
+
         self.guess_peg_y_loc_list.reverse()
 
     def __str__(self):

@@ -3,7 +3,6 @@ from ColorPeg import ColorPeg
 from ScorePeg import ScorePeg
 from KeyPegs import KeyPegs
 from TextObj import TextObj
-# import traceback
 
 # There are 10 guess rows, they have 4 distinct pieces, the label, the pegs, the "X" to submit a guess and the score
 class GuessRow():

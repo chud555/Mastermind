@@ -1,12 +1,10 @@
 from tkinter import *
-from ColorPeg import ColorPeg
-from ScorePeg import ScorePeg
 from TextObj import TextObj
 from Settings import Settings
 from KeyPegs import KeyPegs
 from GuessRows import GuessRows
 from GridCanvas import GridCanvas
-import pygame, random
+import pygame
 
 ##############################################################################################################
 # References :
@@ -19,7 +17,6 @@ import pygame, random
 #
 # Not sure if I'll ever use this, but it seems useful (all bindings in tkinter, or most)
 # https://www.tcl.tk/man/tcl8.6/TkCmd/keysyms.html
-# 
 ##############################################################################################################
 
 GAME_VERSION = "Beta_0.1"
@@ -106,7 +103,6 @@ class Mastermind_Class():
         else:
             self.canvas.create_text(self.title_text.x_loc, self.title_text.y_loc, font=("Courier New", int(self.canvas.curr_x_step / 5.0)), text=self.title_text.text)
 
-    
     def click(self, event):
         # print("Event : " + str(event))        
         if(event.num == 1):
